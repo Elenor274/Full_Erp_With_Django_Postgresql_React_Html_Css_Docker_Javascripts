@@ -28,8 +28,8 @@ export interface OrderItem {
   product_id: string;
   quantity: number;
   weight: number; // in KG
-  length: number; // in CM
-  width: number;  // in CM
+  model_name?: string;
+  color?: string;
 }
 
 export interface Order {

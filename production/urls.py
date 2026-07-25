@@ -36,4 +36,19 @@ urlpatterns = [
     path('maintenance/<int:pk>/', views.maintenance_detail, name='maintenance_detail'),
     path('maintenance/<int:pk>/edit/', views.maintenance_edit, name='maintenance_edit'),
     path('maintenance/<int:pk>/delete/', views.maintenance_delete, name='maintenance_delete'),
+
+    # ساختار درخت محصول (BOM) و انفجار مواد
+    path('bom/', views.bom_list, name='bom_list'),
+    path('bom/create/', views.bom_create, name='bom_create'),
+    path('bom/explosion/', views.bom_explosion, name='bom_explosion'),
+    path('bom/<int:pk>/', views.bom_detail, name='bom_detail'),
+    path('bom/<int:pk>/edit/', views.bom_edit, name='bom_edit'),
+    path('bom/<int:pk>/delete/', views.bom_delete, name='bom_delete'),
+
+    # کنترل کیفیت (QC)
+    path('qc/', views.qc_list, name='qc_list'),
+    path('qc/create/', views.qc_create, name='qc_create'),
+    path('qc/<int:pk>/', views.qc_detail, name='qc_detail'),
+    path('qc/<int:pk>/edit/', views.qc_edit, name='qc_edit'),
+    path('qc/<int:pk>/delete/', views.qc_delete, name='qc_delete'),
 ]

@@ -1,4 +1,5 @@
 {% extends "core/base.html" %}
+{% load humanize %}
 
 {% block title %}سفارشات فروش - حاما پارچه{% endblock %}
 {% block page_title %}داشبورد مدیریت سفارشات{% endblock %}
@@ -39,11 +40,12 @@
                     <tr>
                         <th class="ps-4 text-xs text-secondary py-3" style="border-bottom: 2px solid #e2e8f0; font-weight: 700;">کد سفارش</th>
                         <th class="text-xs text-secondary py-3" style="border-bottom: 2px solid #e2e8f0; font-weight: 700;">نام مشتری</th>
-                        <th class="text-xs text-secondary text-center py-3" style="border-bottom: 2px solid #e2e8f0; font-weight: 700; width: 100px;">تعداد اقلام</th>
+                        <th class="text-xs text-secondary text-center py-3" style="border-bottom: 2px solid #e2e8f0; font-weight: 700;">تاریخ سفارش‌گذاری</th>
+                        <th class="text-xs text-secondary text-center py-3" style="border-bottom: 2px solid #e2e8f0; font-weight: 700;">تاریخ ارسال</th>
+                        <th class="text-xs text-secondary text-center py-3" style="border-bottom: 2px solid #e2e8f0; font-weight: 700;">نقشه‌های طراحی</th>
+                        <th class="text-xs text-secondary text-center py-3" style="border-bottom: 2px solid #e2e8f0; font-weight: 700; width: 120px;">تعداد کل (متراژ/عدد)</th>
                         <th class="text-xs text-secondary text-center py-3" style="border-bottom: 2px solid #e2e8f0; font-weight: 700;">مبلغ کل فاکتور (ریال)</th>
-                        <th class="text-xs text-secondary text-center py-3" style="border-bottom: 2px solid #e2e8f0; font-weight: 700; width: 130px;">وضعیت سفارش</th>
-                        <th class="text-xs text-secondary text-center py-3" style="border-bottom: 2px solid #e2e8f0; font-weight: 700; width: 130px;">تاریخ ثبت</th>
-                        <th class="pe-4 text-xs text-secondary text-center py-3" style="border-bottom: 2px solid #e2e8f0; font-weight: 700; width: 280px;">عملیات</th>
+                        <th class="pe-4 text-xs text-secondary text-center py-3" style="border-bottom: 2px solid #e2e8f0; font-weight: 700; width: 250px;">عملیات</th>
                     </tr>
                 </thead>
 
@@ -56,25 +58,43 @@
                         <!-- مشتری -->
                         <td class="fw-bold text-gray-900 text-xs">{{ order.customer.name }} {{ order.customer.last_name }}</td>
                         
-                        <!-- تعداد آیتم -->
+                        <!-- تاریخ سفارش‌گذاری -->
+                        <td class="text-center font-mono text-xs text-dark fw-medium">
+                            {{ order.order_date_jalali|default:"—" }}
+                        </td>
+
+                        <!-- تاریخ ارسال -->
+                        <td class="text-center font-mono text-xs text-primary fw-medium">
+                            {{ order.delivery_date_jalali|default:"—" }}
+                        </td>
+
+                        <!-- نقشه‌های واحد طراحی -->
+                        <td class="text-center">
+                            {% if order.design_files.exists %}
+                                <div class="d-inline-flex flex-wrap gap-1 justify-content-center">
+                                    {% for df in order.design_files.all %}
+                                        <a href="{{ df.file.url }}" target="_blank" class="badge {{ df.file_type_info.badge }} text-decoration-none py-1 px-1.5" title="{{ df.title|default:df.file_name }}">
+                                            <i data-feather="{{ df.file_type_info.icon }}" style="width:10px;height:10px;"></i>
+                                            {{ df.extension|upper }}
+                                        </a>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <span class="text-muted text-xxs">—</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- تعداد کل -->
                         <td class="text-center font-mono text-xs">
-                            <span class="px-2 py-1 bg-light rounded-2 border text-muted">{{ order.items.count }} قلم</span>
+                            <span class="px-2.5 py-1 bg-light rounded-2 border text-dark fw-bold d-inline-block">
+                                {{ order.total_quantity|floatformat:0|intcomma }} عدد/متر
+                            </span>
                         </td>
                         
                         <!-- مبلغ کل -->
                         <td class="text-center font-mono text-xs fw-bold text-success">
-                            {{ order.total_amount|floatformat:0|default:"0" }}
+                            {{ order.total_amount|floatformat:0|intcomma|default:"0" }}
                         </td>
-                        
-                        <!-- وضعیت -->
-                        <td class="text-center text-xs">
-                            <span class="badge px-2.5 py-1 rounded-3 text-xxs fw-bold bg-success-subtle text-success border border-success-subtle">
-                                {{ order.get_status_display }}
-                            </span>
-                        </td>
-
-                        <!-- تاریخ ثبت -->
-                        <td class="text-center font-mono text-xs text-muted">{{ order.created_at|date:"Y/m/d" }}</td>
 
                         <!-- عملیات -->
                         <td class="pe-4 text-center">

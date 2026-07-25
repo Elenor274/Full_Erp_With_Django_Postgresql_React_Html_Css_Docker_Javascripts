@@ -1,0 +1,128 @@
+{% extends "core/base.html" %}
+{% load humanize %}
+
+{% block title %}ساختار درخت محصول (BOM) - حاما پارچه{% endblock %}
+{% block page_title %}مدیریت درخت محصول و فرمول‌های ساخت (BOM){% endblock %}
+
+{% block content %}
+<div class="fade-in-up">
+    <!-- Top Action Bar & Filter -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h4 class="fw-bold mb-1 text-gray-900">ساختار درخت محصولات (Bill of Materials)</h4>
+            <p class="text-muted text-xs mb-0">تعریف قطعات، مواد اولیه، میزان ضایعات و مراحل تولید محصولات متراژ و دوختی</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% url 'production:bom_explosion' %}" class="btn btn-outline-soft d-inline-flex align-items-center gap-2">
+                <i data-feather="layers"></i>
+                <span>انفجار مواد اولیه (MRP)</span>
+            </a>
+            <a href="{% url 'production:bom_create' %}" class="btn-primary-custom">
+                <i data-feather="plus"></i>
+                <span>تعریف درخت BOM جدید</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="card-custom mb-4">
+        <form method="get" class="row g-3 align-items-center">
+            <div class="col-md-8">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0 text-muted">
+                        <i data-feather="search"></i>
+                    </span>
+                    <input type="text" name="q" value="{{ query }}" class="form-control-custom border-start-0" placeholder="جستجو بر اساس کد BOM، عنوان فرمول، نام یا کد کالا...">
+                </div>
+            </div>
+            <div class="col-md-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary-custom w-100">اعمال فیلتر</button>
+                {% if query %}
+                <a href="{% url 'production:bom_list' %}" class="btn btn-outline-soft">بازنشانی</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- BOM List Table -->
+    <div class="card-custom p-0 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">کد BOM</th>
+                        <th>محصول پایه (والد)</th>
+                        <th>عنوان فرمول ساخت</th>
+                        <th class="text-center">تعداد اجزا / اقلام</th>
+                        <th class="text-center">وضعیت نسخه</th>
+                        <th class="text-center">تاریخ بروزرسانی</th>
+                        <th class="pe-4 text-end">عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for bom in boms %}
+                    <tr>
+                        <td class="ps-4 font-mono fw-bold text-xs text-primary">
+                            <a href="{% url 'production:bom_detail' bom.pk %}" class="text-decoration-none">
+                                {{ bom.bom_code }}
+                            </a>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="p-2 rounded bg-light border">
+                                    <i data-feather="package" class="text-accent" style="width:16px;height:16px;"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark text-xs">{{ bom.product.name }}</div>
+                                    <span class="font-mono text-xxs text-muted">{{ bom.product.code }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-xs fw-bold text-gray-800">{{ bom.title }}</td>
+                        <td class="text-center font-mono text-xs">
+                            <span class="badge bg-light text-dark border font-mono">
+                                {{ bom.total_components_count }} قلم ماده
+                            </span>
+                        </td>
+                        <td class="text-center text-xs">
+                            {% if bom.is_active %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">نسخه فعال</span>
+                            {% else %}
+                            <span class="badge bg-secondary-subtle text-muted border px-2 py-1">غیرفعال</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center font-mono text-xs text-muted">{{ bom.updated_at|date:"Y/m/d" }}</td>
+                        <td class="pe-4 text-end">
+                            <div class="d-flex justify-content-end gap-1">
+                                <a href="{% url 'production:bom_explosion' %}?product_id={{ bom.product.id }}" class="btn btn-sm btn-outline-soft p-1.5" title="محاسبه انفجار مواد">
+                                    <i data-feather="layers" style="width:14px;height:14px;"></i>
+                                </a>
+                                <a href="{% url 'production:bom_detail' bom.pk %}" class="btn btn-sm btn-outline-soft p-1.5" title="مشاهده درخت">
+                                    <i data-feather="eye" style="width:14px;height:14px;"></i>
+                                </a>
+                                <a href="{% url 'production:bom_edit' bom.pk %}" class="btn-edit" title="ویرایش">
+                                    <i data-feather="edit-2" style="width:13px;height:13px;"></i>
+                                </a>
+                                <a href="{% url 'production:bom_delete' bom.pk %}" class="btn btn-sm btn-outline-danger p-1.5" title="حذف">
+                                    <i data-feather="trash-2" style="width:14px;height:14px;"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <div class="text-muted">
+                                <i data-feather="git-merge" style="width:48px;height:48px;opacity:0.3;" class="mb-3"></i>
+                                <p class="fw-bold mb-1">هیچ ساختار BOM یا درخت محصولی یافت نشد.</p>
+                                <span class="text-xs">جهت تعریف ساختار مواد اولیه و درخت محصول جدید، روی دکمه ثبت ساختار جدید کلیک نمایید.</span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

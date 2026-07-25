@@ -1,0 +1,114 @@
+{% extends "core/base.html" %}
+
+{% block title %}ثبت برگه جدید QC - حاما پارچه{% endblock %}
+{% block page_title %}ثبت برگه بازرسی کنترل کیفیت جدید (QC){% endblock %}
+
+{% block content %}
+<div class="fade-in-up">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <a href="{% url 'production:qc_list' %}" class="btn btn-sm btn-outline-soft mb-2">
+                <i data-feather="arrow-right"></i>
+                <span>بازگشت به لیست QC</span>
+            </a>
+            <h4 class="fw-bold mb-0 text-gray-900">ثبت برگه بازرسی کیفیت جدید</h4>
+        </div>
+    </div>
+
+    <form method="post" id="qcForm">
+        {% csrf_token %}
+        <div class="card-custom mb-4">
+            <h6 class="fw-bold mb-3 text-primary border-bottom pb-2">اطلاعات اصلی بازرسی</h6>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label-custom fw-bold">کد برگه QC</label>
+                    {{ form.qc_code }}
+                    <span class="form-text text-xxs">در صورت خالی گذاشتن، خودکار صادر می‌شود.</span>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label-custom fw-bold">نوع بازرسی <span class="text-danger">*</span></label>
+                    {{ form.inspection_type }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label-custom fw-bold">کالا / محصول <span class="text-danger">*</span></label>
+                    {{ form.product }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label-custom fw-bold">تاریخ بازرسی <span class="text-danger">*</span></label>
+                    {{ form.inspection_date }}
+                </div>
+            </div>
+        </div>
+
+        <div class="card-custom mb-4">
+            <h6 class="fw-bold mb-3 text-primary border-bottom pb-2">ارتباطات و انبار</h6>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label-custom">سفارش مرتبط</label>
+                    {{ form.order }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label-custom">برنامه‌ریزی تولید مرتبط</label>
+                    {{ form.planning }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label-custom">انبار مربوطه</label>
+                    {{ form.warehouse }}
+                </div>
+            </div>
+        </div>
+
+        <div class="card-custom mb-4">
+            <h6 class="fw-bold mb-3 text-primary border-bottom pb-2">تفکیک کمّی بازرسی</h6>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label-custom fw-bold">کل مقدار بازرسی شده <span class="text-danger">*</span></label>
+                    {{ form.inspected_quantity }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label-custom fw-bold text-success">مقدار سالم / تایید شده</label>
+                    {{ form.passed_quantity }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label-custom fw-bold text-danger">مقدار ضایعات / مردودی</label>
+                    {{ form.rejected_quantity }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label-custom fw-bold text-warning">مقدار نیازمند دوباره‌کاری</label>
+                    {{ form.rework_quantity }}
+                </div>
+            </div>
+        </div>
+
+        <div class="card-custom mb-4">
+            <h6 class="fw-bold mb-3 text-primary border-bottom pb-2">نتیجه و علت عدم انطباق</h6>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label-custom fw-bold">نتیجه بازرسی <span class="text-danger">*</span></label>
+                    {{ form.status }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label-custom fw-bold">اقدام انجام شده</label>
+                    {{ form.action_taken }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label-custom">علت عیب / عدم انطباق</label>
+                    {{ form.defect_reason }}
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label-custom">توضیحات و ملاحظات فنی بازرس</label>
+                    {{ form.notes }}
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mb-5">
+            <a href="{% url 'production:qc_list' %}" class="btn btn-outline-soft">انصراف</a>
+            <button type="submit" class="btn-primary-custom px-4">
+                <i data-feather="check"></i>
+                <span>ثبت و ذخیره برگه QC</span>
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # ERP apps
+    'django.contrib.humanize',
     'core',
     'orders',
     'customers',
@@ -42,19 +43,15 @@ MIDDLEWARE = [
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-SESSION_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_SECURE = False
-
+SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SECURE = True
 CSRF_TRUSTED_ORIGINS = [
     'https://*.run.app',
     'https://*.googleusercontent.com',
     'https://*.aistudio.google',
     'https://*.studio',
-    'http://127.0.0.1',
-    'http://localhost',
-    'http://*',
 ]
 
 ROOT_URLCONF = 'textile_erp.urls'
@@ -128,6 +125,10 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # DEFAULT AUTO FIELD
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# MEDIA FILES (برای آپلود نقشه‌های طراحی و فایل‌های فنی)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # AUTH REDIRECTS
 LOGIN_URL = '/login/'

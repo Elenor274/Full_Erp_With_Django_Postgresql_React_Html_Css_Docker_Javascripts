@@ -95,6 +95,26 @@ class Planning(models.Model):
         verbose_name_plural = "برنامه‌ریزی‌های تولید"
         ordering = ['-start_date', '-created_at']
 
+    @property
+    def start_date_jalali(self):
+        if not self.start_date:
+            return ""
+        import jdatetime
+        try:
+            return jdatetime.date.fromgregorian(date=self.start_date).strftime("%Y/%m/%d")
+        except Exception:
+            return ""
+
+    @property
+    def end_date_jalali(self):
+        if not self.end_date:
+            return ""
+        import jdatetime
+        try:
+            return jdatetime.date.fromgregorian(date=self.end_date).strftime("%Y/%m/%d")
+        except Exception:
+            return ""
+
     def __str__(self):
         return f"{self.planning_code} - {self.product.name} ({self.get_status_display()})"
 
@@ -138,6 +158,66 @@ class Planning(models.Model):
                 return True, "کسر موجودی با موفقیت انجام شد."
         except Exception as e:
             return False, f"خطا در کسر موجودی: {str(e)}"
+
+    def complete_production(self, user=None):
+        """
+        تکمیل ساخت محصول و اضافه کردن محصول نهایی تولید شده به انبار محصولات نهایی
+        همچنین به‌روزرسانی خودکار وضعیت سفارش مرتبط در صورت تکمیل تمام برنامه‌ریزی‌های سفارش
+        """
+        messages_list = []
+        # ۱. کسر مواد اولیه در صورت عدم کسر قبلی
+        if not self.material_deducted:
+            success, msg = self.deduct_inventory(user=user)
+            messages_list.append(msg)
+
+        # ۲. رسید محصول نهایی به انبار محصولات نهایی
+        fg_warehouse = Warehouse.objects.filter(warehouse_type='finished_goods').first()
+        if not fg_warehouse:
+            fg_warehouse = Warehouse.objects.first()
+
+        if fg_warehouse and self.produced_quantity > 0:
+            ref_str = f"رسید تولید {self.planning_code}"
+            already_received = StockTransaction.objects.filter(
+                warehouse=fg_warehouse,
+                product=self.product,
+                type=StockTransaction.IN,
+                reference=ref_str
+            ).exists()
+
+            if not already_received:
+                try:
+                    with transaction.atomic():
+                        stock_item, _ = StockItem.objects.select_for_update().get_or_create(
+                            warehouse=fg_warehouse,
+                            product=self.product,
+                            defaults={'quantity': 0}
+                        )
+                        stock_item.quantity += self.produced_quantity
+                        stock_item.save()
+
+                        StockTransaction.objects.create(
+                            warehouse=fg_warehouse,
+                            product=self.product,
+                            type=StockTransaction.IN,
+                            quantity=self.produced_quantity,
+                            unit=self.product.unit,
+                            transaction_category='production',
+                            reference=ref_str,
+                            user=user,
+                        )
+                        messages_list.append(f"مقدار {self.produced_quantity} {self.product.unit} به انبار {fg_warehouse.name} اضافه شد.")
+                except Exception as e:
+                    messages_list.append(f"خطا در رسید محصول به انبار: {str(e)}")
+
+        # ۳. به‌روزرسانی وضعیت سفارش
+        if self.order:
+            all_plans = Planning.objects.filter(order=self.order)
+            if all_plans.exists() and all(p.status == 'completed' for p in all_plans):
+                self.order.status = 'warehouse'
+                self.order.save()
+                messages_list.append(f"وضعیت سفارش #{self.order.order_code} به «انبار» تغییر یافت.")
+
+        return True, " / ".join(messages_list) if messages_list else "تولید با موفقیت تکمیل شد."
 
 
 class MaintenanceActivity(models.Model):
@@ -298,4 +378,137 @@ class MaintenanceActivity(models.Model):
             except Exception:
                 pass
         super().save(*args, **kwargs)
+
+
+class BOM(models.Model):
+    bom_code = models.CharField(max_length=50, unique=True, verbose_name="کد ساختار BOM")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='boms', verbose_name="محصول اصلی (پایه)")
+    title = models.CharField(max_length=150, verbose_name="عنوان فرمول / ساختار درخت")
+    is_active = models.BooleanField(default=True, verbose_name="نسخه فعال / اصلی")
+    description = models.TextField(blank=True, null=True, verbose_name="توضیحات و ملاحظات فنی")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "ساختار درخت محصول (BOM)"
+        verbose_name_plural = "ساختار درخت محصولات (BOM)"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.bom_code} - {self.product.name} ({self.title})"
+
+    def save(self, *args, **kwargs):
+        if not self.bom_code:
+            import jdatetime
+            try:
+                year = jdatetime.date.today().year
+            except Exception:
+                year = 1405
+            last_record = BOM.objects.all().order_by('id').last()
+            last_id = last_record.id if last_record else 0
+            self.bom_code = f"BOM-{year}-{last_id + 1:04d}"
+        super().save(*args, **kwargs)
+
+    @property
+    def total_components_count(self):
+        return self.items.count()
+
+
+class BOMItem(models.Model):
+    bom = models.ForeignKey(BOM, on_delete=models.CASCADE, related_name='items', verbose_name="ساختار درخت BOM")
+    component = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='bom_usages', verbose_name="ماده اولیه / قطعه")
+    quantity = models.DecimalField(max_digits=12, decimal_places=4, verbose_name="مقدار مصرف استاندارد (به ازای ۱ واحد محصول)")
+    scrap_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0, verbose_name="درصد ضایعات / پرتی (%)")
+    stage = models.ForeignKey(WorkStage, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="مرحله مصرف کاری")
+    notes = models.CharField(max_length=255, blank=True, null=True, verbose_name="ملاحظات قطعه")
+
+    class Meta:
+        verbose_name = "قلم BOM"
+        verbose_name_plural = "اقلام BOM"
+
+    def __str__(self):
+        return f"{self.component.name} ({self.quantity} {self.component.unit})"
+
+    @property
+    def gross_quantity_per_unit(self):
+        from decimal import Decimal
+        return self.quantity * (Decimal('1.0') + (self.scrap_percentage / Decimal('100.0')))
+
+
+class QualityControl(models.Model):
+    INSPECTION_TYPES = [
+        ('incoming', 'ورودی مواد اولیه (IQC)'),
+        ('in_process', 'حین تولید (PQC)'),
+        ('finished', 'محصول نهایی (FQC)'),
+    ]
+
+    STATUS_CHOICES = [
+        ('passed', 'تایید شده (سالم)'),
+        ('conditional', 'تایید مشروط'),
+        ('rejected', 'مردود / ضایعات'),
+    ]
+
+    ACTION_CHOICES = [
+        ('accept', 'ورود به انبار اصلی'),
+        ('rework', 'ارجاع به دوباره‌کاری'),
+        ('scrap', 'انتقال به انبار ضایعات'),
+        ('return', 'مرجوع به تامین‌کننده'),
+    ]
+
+    qc_code = models.CharField(max_length=50, unique=True, verbose_name="شماره برگه QC")
+    inspection_type = models.CharField(max_length=20, choices=INSPECTION_TYPES, default='in_process', verbose_name="نوع بازرسی")
+    
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="کالا / محصول بازرسی شده")
+    order = models.ForeignKey('orders.Order', on_delete=models.SET_NULL, null=True, blank=True, verbose_name="سفارش مرتبط")
+    planning = models.ForeignKey(Planning, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="برنامه‌ریزی تولید مرتبط")
+    warehouse = models.ForeignKey(Warehouse, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="انبار مربوطه")
+    
+    inspector = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="بازرس کیفیت")
+    inspection_date = models.DateField(verbose_name="تاریخ بازرسی")
+    
+    inspected_quantity = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="کل مقدار بازرسی شده")
+    passed_quantity = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name="مقدار سالم / تایید شده")
+    rejected_quantity = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name="مقدار ضایعات / مردودی")
+    rework_quantity = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name="مقدار نیازمند دوباره‌کاری")
+    
+    defect_reason = models.CharField(max_length=255, blank=True, null=True, verbose_name="نوع عیب / علت عدم تایید")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='passed', verbose_name="نتیجه بازرسی")
+    action_taken = models.CharField(max_length=20, choices=ACTION_CHOICES, default='accept', verbose_name="اقدام انجام شده")
+    notes = models.TextField(blank=True, null=True, verbose_name="توضیحات فنی بازرس")
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "برگه کنترل کیفیت (QC)"
+        verbose_name_plural = "برگه‌های کنترل کیفیت (QC)"
+        ordering = ['-inspection_date', '-created_at']
+
+    def __str__(self):
+        return f"{self.qc_code} - {self.product.name} ({self.get_status_display()})"
+
+    def save(self, *args, **kwargs):
+        if not self.qc_code:
+            import jdatetime
+            try:
+                year = jdatetime.date.today().year
+            except Exception:
+                year = 1405
+            last_record = QualityControl.objects.all().order_by('id').last()
+            last_id = last_record.id if last_record else 0
+            self.qc_code = f"QC-{year}-{last_id + 1:04d}"
+        super().save(*args, **kwargs)
+
+    @property
+    def pass_rate(self):
+        if self.inspected_quantity and self.inspected_quantity > 0:
+            return round((float(self.passed_quantity) / float(self.inspected_quantity)) * 100, 1)
+        return 0.0
+
+    @property
+    def defect_rate(self):
+        if self.inspected_quantity and self.inspected_quantity > 0:
+            return round((float(self.rejected_quantity) / float(self.inspected_quantity)) * 100, 1)
+        return 0.0
+
 

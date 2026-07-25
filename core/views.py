@@ -17,7 +17,7 @@ def logout_view(request):
 
 @login_required
 def dashboard(request):
-    recent_qs = Order.objects.select_related('customer').order_by('-created_at')[:20]
+    recent_qs = Order.objects.select_related('customer').prefetch_related('design_files').order_by('-created_at')[:20]
     recent_orders = []
     for o in recent_qs:
         customer_name = '—'
@@ -29,14 +29,33 @@ def dashboard(request):
         except Exception:
             customer_name = getattr(o, 'customer_name', '—')
 
+        design_files_info = [
+            {
+                'file_url': df.file.url,
+                'title': df.title or df.file_name,
+                'ext': df.extension.upper(),
+                'badge': df.file_type_info['badge'],
+                'icon': df.file_type_info['icon'],
+            }
+            for df in o.design_files.all()
+        ]
+
+        tot_val = getattr(o, 'total_amount', getattr(o, 'total', 0)) or 0
+        try:
+            tot_int = int(tot_val)
+        except (ValueError, TypeError):
+            tot_int = 0
+
         recent_orders.append({
             'id': o.pk,
+            'code': o.order_code,
             'customer': customer_name,
             'date': o.created_at.strftime('%Y/%m/%d %H:%M') if getattr(o, 'created_at', None) else '—',
-            'total': getattr(o, 'total_amount', getattr(o, 'total', 0)),
+            'total': f"{tot_int:,}" if tot_int else "0",
             'status': o.get_status_display() if hasattr(o, 'get_status_display') else getattr(o, 'status', '—'),
             'status_color': '#0b66ff',
             'status_bg': 'rgba(11,102,255,0.06)',
+            'design_files': design_files_info,
             'view_url': f"/orders/{o.pk}/",
             'edit_url': f"/orders/{o.pk}/edit/",
             'delete_url': f"/orders/{o.pk}/delete/",

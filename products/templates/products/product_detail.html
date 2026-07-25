@@ -1,99 +1,198 @@
 {% extends "core/base.html" %}
+{% load humanize %}
 
-{% block title %}شناسنامه محصول - {{ product.name }} - حاما پارچه{% endblock %}
-{% block page_title %}شناسنامه فنی و موجودی کالا{% endblock %}
+{% block title %}شناسنامه و ردیابی کالا #{{ product.code }} - {{ product.name }}{% endblock %}
+{% block page_title %}شناسنامه فنی و سامانه ردیابی کد کالا (Traceability){% endblock %}
 
 {% block breadcrumbs %}
 <ol class="breadcrumb">
   <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">داشبورد</a></li>
   <li class="breadcrumb-item"><a href="{% url 'products:product_list' %}">محصولات</a></li>
-  <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+  <li class="breadcrumb-item active" aria-current="page">کد کالا {{ product.code }}</li>
 </ol>
 {% endblock %}
 
 {% block content %}
 <div class="fade-in-up">
 
-    <!-- کارت اطلاعات هدر و اصلی محصول -->
-    <div class="card-custom bg-white p-4 mb-4 border-0 shadow-sm rounded-4 position-relative overflow-hidden">
+    <!-- کارت اصلی ردیابی کد کالا -->
+    <div class="card-custom bg-white p-4 mb-4 border-0 shadow-sm rounded-4 position-relative overflow-hidden" style="border-right: 5px solid var(--accent) !important;">
         <div class="position-absolute" style="left: -15px; top: -15px; opacity: 0.05; pointer-events: none;">
-            <i data-feather="cpu" style="width: 140px; height: 140px; stroke-width: 1;"></i>
+            <i data-feather="search" style="width: 140px; height: 140px; stroke-width: 1;"></i>
         </div>
 
-        <div class="row align-items-center mb-4">
+        <div class="row align-items-center mb-3">
             <div class="col-md-8">
                 <div class="d-flex align-items-center gap-3">
-                    <div class="p-3 bg-primary-subtle text-primary rounded-3 d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; background-color: rgba(79, 70, 229, 0.08);">
-                        <i data-feather="package" style="width: 28px; height: 28px; color: var(--accent);"></i>
+                    <div class="p-3 bg-primary-subtle text-primary rounded-3 d-flex align-items-center justify-content-center" style="width: 56px; height: 56px; background-color: rgba(79, 70, 229, 0.08);">
+                        <i data-feather="check-circle" style="width: 28px; height: 28px; color: var(--accent);"></i>
                     </div>
                     <div>
-                        <h4 class="fw-bold text-gray-900 mb-1" style="font-size: 1.25rem;">{{ product.name }}</h4>
-                        <span class="badge bg-secondary-subtle text-secondary py-1 px-2.5 rounded-2 text-xxs fw-bold">کد کالا: {{ product.code }}</span>
-                        <span class="badge bg-primary-subtle text-primary py-1 px-2.5 rounded-2 text-xxs fw-bold me-2">{{ product.group.name }}</span>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="badge bg-dark text-white px-2.5 py-1 rounded-2 font-mono text-xs">کد ردیابی کالا: {{ product.code }}</span>
+                            <span class="badge bg-primary-subtle text-primary py-1 px-2.5 rounded-2 text-xxs fw-bold">{{ product.group.name }}</span>
+                        </div>
+                        <h4 class="fw-bold text-gray-900 mb-0" style="font-size: 1.3rem;">{{ product.name }}</h4>
                     </div>
                 </div>
             </div>
             <div class="col-md-4 text-md-end mt-3 mt-md-0 d-flex justify-content-md-end gap-2">
                 <a href="{% url 'products:product_edit' product.id %}" class="btn btn-outline-soft d-inline-flex align-items-center gap-1.5 py-2 px-3 text-xs fw-bold">
-                    <i data-feather="edit-2" style="width: 14px; height: 14px;"></i> ویرایش اطلاعات کالا
+                    <i data-feather="edit-2" style="width: 14px; height: 14px;"></i> ویرایش
                 </a>
                 <a href="{% url 'products:product_list' %}" class="btn btn-outline-soft d-inline-flex align-items-center gap-1.5 py-2 px-3 text-xs fw-bold">
-                     بازگشت به لیست محصولات
+                    بازگشت به کاتالوگ
                 </a>
             </div>
         </div>
 
-        <hr class="my-4" style="border-color: #f1f5f9;">
-
-        <!-- خلاصه آمار و مشخصات فنی -->
-        <div class="row g-4">
+        <!-- آمار داینامیک موجودی بین انبار و تولید -->
+        <div class="row g-3 mt-2">
             <div class="col-md-3 col-sm-6">
-                <div class="p-3 bg-light rounded-3 border">
-                    <span class="text-muted text-xxs d-block mb-1">واحد سنجش اصلی</span>
-                    <strong class="text-dark font-sans text-sm">{{ product.unit }}</strong>
+                <div class="p-3 rounded-3 border" style="background-color: #f8fafc;">
+                    <span class="text-muted text-xxs d-block mb-1">ورود به انبار / تولید (مجموع)</span>
+                    <strong class="text-primary font-mono text-base">{{ product.total_stock_in|floatformat:0|intcomma }} <span class="text-xxs font-sans text-muted">{{ product.unit }}</span></strong>
                 </div>
             </div>
             <div class="col-md-3 col-sm-6">
-                <div class="p-3 bg-light rounded-3 border">
+                <div class="p-3 rounded-3 border" style="background-color: #f8fafc;">
+                    <span class="text-muted text-xxs d-block mb-1">مصرف شده / خروج از انبار</span>
+                    <strong class="text-danger font-mono text-base">{{ product.total_stock_out|floatformat:0|intcomma }} <span class="text-xxs font-sans text-muted">{{ product.unit }}</span></strong>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="p-3 rounded-3 border" style="background-color: #f0fdf4; border-color: #bbf7d0 !important;">
+                    <span class="text-success text-xxs d-block mb-1 fw-bold">مانده موجودی (داینامیک)</span>
+                    <strong class="text-success font-mono text-base fw-bold">{{ product.stock_balance|floatformat:0|intcomma }} <span class="text-xxs font-sans text-success">{{ product.unit }}</span></strong>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="p-3 rounded-3 border" style="background-color: #f8fafc;">
                     <span class="text-muted text-xxs d-block mb-1">قیمت واحد مصوب</span>
-                    <strong class="text-success font-mono text-sm">{{ product.unit_price|floatformat:0 }} <span class="text-xxs font-sans text-muted">ریال</span></strong>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="p-3 bg-light rounded-3 border">
-                    <span class="text-muted text-xxs d-block mb-1">موجودی فیزیکی کل</span>
-                    <strong class="text-dark font-mono text-sm">{{ total_stock|floatformat:0 }} <span class="text-xxs font-sans text-muted">{{ product.unit }}</span></strong>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="p-3 bg-light rounded-3 border">
-                    <span class="text-muted text-xxs d-block mb-1">مجموع خروجی کل سیستم</span>
-                    <strong class="text-danger font-mono text-sm">{{ product.stock_out|floatformat:0 }} <span class="text-xxs font-sans text-muted">{{ product.unit }}</span></strong>
+                    <strong class="text-dark font-mono text-base">{{ product.unit_price|floatformat:0|intcomma }} <span class="text-xxs font-sans text-muted">ریال</span></strong>
                 </div>
             </div>
         </div>
 
         {% if product.description %}
-        <div class="mt-4 p-3 bg-light rounded-3 border">
-            <span class="text-muted text-xxs d-block mb-1">توضیحات و مشخصات کالا</span>
-            <p class="text-dark text-xs mb-0 leading-relaxed">{{ product.description }}</p>
+        <div class="mt-3 p-3 bg-light rounded-3 border">
+            <span class="text-muted text-xxs d-block mb-1">توضیحات و ملاحظات فنی کالا:</span>
+            <p class="text-dark text-xs mb-0">{{ product.description }}</p>
         </div>
         {% endif %}
     </div>
 
+    <!-- ۱. بخش سفارشات مشتریان برای این کد کالا -->
+    <div class="card-custom bg-white p-4 mb-4 border-0 shadow-sm rounded-4">
+        <h6 class="fw-bold text-gray-900 mb-3 d-flex align-items-center gap-2" style="font-size: 0.95rem;">
+            <i data-feather="shopping-cart" style="width: 18px; height: 18px; color: var(--accent);"></i>
+            سفارشات مشتریان برای این کد کالا (#{{ product.code }})
+        </h6>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" style="border: none;">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-3 text-xs text-secondary py-2.5" style="font-weight: 700;">کد سفارش</th>
+                        <th class="text-xs text-secondary py-2.5" style="font-weight: 700;">نام مشتری</th>
+                        <th class="text-xs text-secondary text-center py-2.5" style="font-weight: 700;">تاریخ سفارش‌گذاری</th>
+                        <th class="text-xs text-secondary text-center py-2.5" style="font-weight: 700;">تاریخ ارسال</th>
+                        <th class="text-xs text-secondary text-center py-2.5" style="font-weight: 700;">مقدار سفارش</th>
+                        <th class="text-xs text-secondary text-center py-2.5" style="font-weight: 700;">مبلغ کل</th>
+                        <th class="pe-3 text-xs text-secondary text-center py-2.5" style="font-weight: 700;">مشاهده</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order_items %}
+                    <tr>
+                        <td class="ps-3 font-mono text-xs text-muted fw-bold">#{{ item.order.order_code }}</td>
+                        <td class="text-xs fw-bold text-gray-900">{{ item.order.customer.name }} {{ item.order.customer.last_name }}</td>
+                        <td class="text-center font-mono text-xs text-dark">{{ item.order.order_date_jalali|default:"—" }}</td>
+                        <td class="text-center font-mono text-xs text-primary">{{ item.order.delivery_date_jalali|default:"—" }}</td>
+                        <td class="text-center font-mono text-xs fw-bold text-dark">{{ item.quantity|floatformat:0 }} {{ product.unit }}</td>
+                        <td class="text-center font-mono text-xs text-success fw-bold">{{ item.total_price|floatformat:0|intcomma }} ریال</td>
+                        <td class="pe-3 text-center">
+                            <a href="{% url 'orders:order_detail' item.order.id %}" class="btn-edit" style="background-color: rgba(79, 70, 229, 0.08) !important; color: var(--accent) !important;">
+                                <i data-feather="eye" style="width: 12px; height: 12px;"></i> جزئیات سفارش
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4 text-xs">
+                            هیچ سفارشی برای این کد کالا ثبت نشده است.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ۲. بخش برنامه‌ریزی و مراحل کاری تولید برای این کد کالا -->
+    <div class="card-custom bg-white p-4 mb-4 border-0 shadow-sm rounded-4">
+        <h6 class="fw-bold text-gray-900 mb-3 d-flex align-items-center gap-2" style="font-size: 0.95rem;">
+            <i data-feather="git-commit" style="width: 18px; height: 18px; color: var(--accent);"></i>
+            برنامه‌ریزی تولید و مراحل کاری (Work Stages)
+        </h6>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" style="border: none;">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-3 text-xs text-secondary py-2.5" style="font-weight: 700;">کد برنامه‌ریزی</th>
+                        <th class="text-xs text-secondary py-2.5" style="font-weight: 700;">سفارش مربوطه</th>
+                        <th class="text-xs text-secondary text-center py-2.5" style="font-weight: 700;">مرحله کاری</th>
+                        <th class="text-xs text-secondary text-center py-2.5" style="font-weight: 700;">دستگاه و اپراتور</th>
+                        <th class="text-xs text-secondary text-center py-2.5" style="font-weight: 700;">مقدار هدف</th>
+                        <th class="text-xs text-secondary text-center py-2.5" style="font-weight: 700;">مقدار تولید شده</th>
+                        <th class="pe-3 text-xs text-secondary text-center py-2.5" style="font-weight: 700;">وضعیت</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for plan in plannings %}
+                    <tr>
+                        <td class="ps-3 font-mono text-xs text-muted fw-bold">{{ plan.planning_code }}</td>
+                        <td class="text-xs text-dark fw-medium">{% if plan.order %}سفارش #{{ plan.order.order_code }} ({% if plan.order.customer %}{{ plan.order.customer.name }}{% endif %}){% else %}برنامه‌ریزی مستقیم{% endif %}</td>
+                        <td class="text-center">
+                            <span class="badge bg-primary-subtle text-primary text-xs py-1 px-2.5 rounded-2 fw-bold">
+                                {{ plan.stage.name|default:"تولید عام" }}
+                            </span>
+                        </td>
+                        <td class="text-center text-xs text-muted">
+                            {{ plan.machine.name|default:"—" }} / {{ plan.operator.get_full_name|default:"—" }}
+                        </td>
+                        <td class="text-center font-mono text-xs text-dark fw-bold">{{ plan.target_quantity|floatformat:0 }} {{ product.unit }}</td>
+                        <td class="text-center font-mono text-xs text-success fw-bold">{{ plan.produced_quantity|floatformat:0 }} {{ product.unit }}</td>
+                        <td class="pe-3 text-center text-xs">
+                            <span class="badge {% if plan.status == 'completed' %}bg-success-subtle text-success{% elif plan.status == 'in_progress' %}bg-warning-subtle text-warning{% else %}bg-secondary-subtle text-secondary{% endif %} py-1 px-2 rounded-2">
+                                {{ plan.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4 text-xs">
+                            هیچ برنامه تولیدی برای این کد کالا تعریف نشده است.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <div class="row g-4">
-        <!-- جدول استقرار و موجودی در انبارها -->
+        <!-- ۳. وضعیت استقرار در انبارها -->
         <div class="col-lg-5 col-md-12">
             <div class="card-custom bg-white p-4 border-0 shadow-sm rounded-4 h-100">
                 <h6 class="fw-bold text-gray-900 mb-3 d-flex align-items-center gap-2" style="font-size: 0.95rem;">
                     <i data-feather="database" style="width: 18px; height: 18px; color: var(--accent);"></i>
-                    وضعیت استقرار و فیزیکی انبارها
+                    وضعیت موجودی در انبارهای فیزیکی
                 </h6>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0" style="border: none;">
                         <thead class="bg-light">
                             <tr>
-                                <th class="text-xs text-secondary py-2.5" style="font-weight: 700;">نام انبار فیزیکی</th>
+                                <th class="text-xs text-secondary py-2.5" style="font-weight: 700;">نام انبار</th>
                                 <th class="text-xs text-secondary text-center py-2.5" style="font-weight: 700;">موجودی واقعی</th>
                             </tr>
                         </thead>
@@ -108,7 +207,7 @@
                             {% empty %}
                             <tr>
                                 <td colspan="2" class="text-center text-muted py-4 text-xs">
-                                    کالا در هیچ انبار فیزیکی موجودی ندارد.
+                                    موجودی تفکیکی ثبت نشده است.
                                 </td>
                             </tr>
                             {% endfor %}
@@ -118,28 +217,27 @@
             </div>
         </div>
 
-        <!-- آخرین تراکنش‌های این محصول (کاردکس) -->
+        <!-- ۴. آخرین تراکنش‌های رسید و حواله -->
         <div class="col-lg-7 col-md-12">
             <div class="card-custom bg-white p-4 border-0 shadow-sm rounded-4 h-100">
                 <h6 class="fw-bold text-gray-900 mb-3 d-flex align-items-center gap-2" style="font-size: 0.95rem;">
                     <i data-feather="activity" style="width: 18px; height: 18px; color: var(--accent);"></i>
-                    آخرین تراکنش‌های فیزیکی (رسید و حواله)
+                    آخرین تراکنش‌های انبار (کاردکس)
                 </h6>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0" style="border: none;">
                         <thead class="bg-light">
                             <tr>
-                                <th class="text-xs text-secondary py-2.5" style="font-weight: 700;">تاریخ ثبت</th>
-                                <th class="text-xs text-secondary text-center py-2.5" style="font-weight: 700;">نوع سند</th>
-                                <th class="text-xs text-secondary py-2.5" style="font-weight: 700;">انبار مبدأ/مقصد</th>
-                                <th class="text-xs text-secondary text-center py-2.5" style="font-weight: 700;">مقدار تراکنش</th>
-                                <th class="text-xs text-secondary text-center py-2.5" style="font-weight: 700;">کاربر ثبت</th>
+                                <th class="text-xs text-secondary py-2.5" style="font-weight: 700;">تاریخ</th>
+                                <th class="text-xs text-secondary text-center py-2.5" style="font-weight: 700;">نوع</th>
+                                <th class="text-xs text-secondary py-2.5" style="font-weight: 700;">انبار</th>
+                                <th class="text-xs text-secondary text-center py-2.5" style="font-weight: 700;">مقدار</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for t in transactions %}
                             <tr>
-                                <td class="font-mono text-xs text-muted" style="direction: ltr;">{{ t.date|date:"Y/m/d H:i" }}</td>
+                                <td class="font-mono text-xs text-muted" style="direction: ltr;">{{ t.date|date:"Y/m/d" }}</td>
                                 <td class="text-center">
                                     {% if t.type == "IN" %}
                                         <span class="badge bg-success-subtle text-success text-xxs py-0.5 px-2 rounded-2">ورودی (رسید)</span>
@@ -149,13 +247,12 @@
                                 </td>
                                 <td class="text-xs text-muted">{{ t.warehouse.name }}</td>
                                 <td class="text-center font-mono text-xs fw-bold {% if t.type == 'IN' %}text-success{% else %}text-danger{% endif %}">
-                                    {% if t.type == 'IN' %}+{% else %}-{% endif %}{{ t.quantity|floatformat:0 }}
+                                    {% if t.type == 'IN' %}+{% else %}-{% endif %}{{ t.quantity|floatformat:0 }} {{ product.unit }}
                                 </td>
-                                <td class="text-center text-xs text-muted">{{ t.user.username }}</td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="5" class="text-center text-muted py-4 text-xs">
+                                <td colspan="4" class="text-center text-muted py-4 text-xs">
                                     تراکنشی برای این محصول ثبت نشده است.
                                 </td>
                             </tr>

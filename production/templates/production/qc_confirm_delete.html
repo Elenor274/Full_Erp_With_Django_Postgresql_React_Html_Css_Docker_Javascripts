@@ -1,0 +1,26 @@
+{% extends "core/base.html" %}
+
+{% block title %}حذف برگه QC - {{ qc.qc_code }}{% endblock %}
+{% block page_title %}تایید حذف برگه بازرسی کیفیت{% endblock %}
+
+{% block content %}
+<div class="fade-in-up d-flex justify-content-center py-4">
+    <div class="card-custom text-center style-delete-card" style="max-width: 500px; width: 100%;">
+        <div class="p-3 bg-danger-subtle text-danger rounded-circle d-inline-flex mb-3">
+            <i data-feather="alert-triangle" style="width:36px;height:36px;"></i>
+        </div>
+        <h5 class="fw-bold text-gray-900 mb-2">تایید حذف برگه QC</h5>
+        <p class="text-xs text-muted mb-4">
+            آیا از حذف برگه بازرسی کیفیت <strong class="text-dark font-mono">{{ qc.qc_code }}</strong> مربوط به کالا <strong class="text-dark">{{ qc.product.name }}</strong> اطمینان کامل دارید؟
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="d-flex justify-content-center gap-2">
+                <a href="{% url 'production:qc_list' %}" class="btn btn-outline-soft px-4">انصراف</a>
+                <button type="submit" class="btn btn-danger px-4">حذف برگه QC</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

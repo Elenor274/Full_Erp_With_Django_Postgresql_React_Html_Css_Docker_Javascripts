@@ -158,8 +158,8 @@ def seed_database():
         defaults={
             'quantity': 3000,
             'weight': 1200.00,
-            'length': 3000.00,
-            'width': 1.50
+            'model_name': 'M-101 (سنگ‌شور)',
+            'color': 'نیلی دودی'
         }
     )
 
@@ -177,8 +177,8 @@ def seed_database():
         defaults={
             'quantity': 2000,
             'weight': 800.00,
-            'length': 2000.00,
-            'width': 1.50
+            'model_name': 'P-202 (چهارخانه)',
+            'color': 'سفید آبی'
         }
     )
     print("Created Customers and Orders.")

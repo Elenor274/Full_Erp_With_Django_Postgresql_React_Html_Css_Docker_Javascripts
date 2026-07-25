@@ -1,4 +1,5 @@
 {% extends "core/base.html" %}
+{% load humanize %}
 {% load static %}
 {% block title %}گزارشات و رهگیری هوشمند | حاما پارچه{% endblock %}
 {% block page_title %}گزارشات و رهگیری هوشمند{% endblock %}
@@ -614,7 +615,7 @@
                   {% for sub in item.items_list %}
                     <li class="d-flex justify-content-between align-items-center" style="font-size: 0.85rem; border-bottom: 1px solid rgba(0,0,0,0.03); padding-bottom: 6px;">
                       <span>{{ sub.product.name }}</span>
-                      <strong style="color: var(--accent);">{{ sub.quantity|floatformat:0 }} عدد</strong>
+                      <strong style="color: var(--accent);">{{ sub.quantity|floatformat:0|intcomma }} عدد</strong>
                     </li>
                   {% empty %}
                     <li class="text-muted" style="font-size: 0.82rem;">قلم کالایی ثبت نشده است.</li>
@@ -871,14 +872,14 @@
         <div class="metric-icon"><i data-feather="dollar-sign"></i></div>
         <div class="metric-info">
           <span class="metric-label">ارزش کل مبادلات تجاری</span>
-          <span class="metric-value">{{ sales_data.total_revenue|floatformat:0 }} تومان</span>
+          <span class="metric-value">{{ sales_data.total_revenue|floatformat:0|intcomma }} ریال</span>
         </div>
       </div>
       <div class="metric-card">
         <div class="metric-icon"><i data-feather="users"></i></div>
         <div class="metric-info">
           <span class="metric-label">کل سفارشات ثبت شده</span>
-          <span class="metric-value">{{ sales_data.total_orders_count|floatformat:0 }} سفارش</span>
+          <span class="metric-value">{{ sales_data.total_orders_count|floatformat:0|intcomma }} سفارش</span>
         </div>
       </div>
     </div>

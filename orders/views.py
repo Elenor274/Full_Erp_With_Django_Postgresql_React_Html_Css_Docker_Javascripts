@@ -2,8 +2,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
-from .forms import OrderForm, OrderItemFormSet
-from .models import Order
+from django.contrib import messages
+from .forms import OrderForm, OrderItemFormSet, OrderDesignFileForm
+from .models import Order, OrderDesignFile
 
 # -----------------------------
 # ایجاد سفارش
@@ -11,15 +12,27 @@ from .models import Order
 @login_required
 def order_create(request):
     if request.method == "POST":
-        form = OrderForm(request.POST)
+        form = OrderForm(request.POST, request.FILES)
         formset = OrderItemFormSet(request.POST)
 
         if form.is_valid() and formset.is_valid():
             order = form.save()
             formset.instance = order
             formset.save()
-            # redirect به صفحهٔ اصلی تا سفارش جدید بلافاصله نمایش داده شود
-            return redirect("core:dashboard")
+
+            # پردازش فایل‌های نقشه واحدهای طراحی (Catia, Photoshop, AutoCAD, PDF, ...)
+            files = request.FILES.getlist('design_files')
+            titles = request.POST.getlist('design_titles')
+            for idx, f in enumerate(files):
+                title = titles[idx] if idx < len(titles) else f.name
+                OrderDesignFile.objects.create(
+                    order=order,
+                    file=f,
+                    title=title or f.name
+                )
+
+            messages.success(request, f"سفارش {order.order_code} با موفقیت ثبت شد.")
+            return redirect("orders:order_detail", pk=order.pk)
 
     else:
         form = OrderForm()
@@ -36,7 +49,7 @@ def order_create(request):
 # -----------------------------
 @login_required
 def order_list(request):
-    orders = Order.objects.all().order_by("-id")
+    orders = Order.objects.all().prefetch_related('design_files').order_by("-id")
     return render(request, "orders/order_list.html", {"orders": orders})
 
 
@@ -47,10 +60,53 @@ def order_list(request):
 def order_detail(request, pk):
     order = get_object_or_404(Order, pk=pk)
     items = order.items.all()
+    design_files = order.design_files.all()
+    design_file_form = OrderDesignFileForm()
     return render(request, "orders/order_detail.html", {
         "order": order,
-        "items": items
+        "items": items,
+        "design_files": design_files,
+        "design_file_form": design_file_form,
     })
+
+
+# -----------------------------
+# آپلود نقشه جدید مستقیم از جزئیات سفارش
+# -----------------------------
+@login_required
+@require_POST
+def order_upload_design_file(request, pk):
+    order = get_object_or_404(Order, pk=pk)
+    files = request.FILES.getlist('file')
+    title = request.POST.get('title', '')
+    
+    if files:
+        for f in files:
+            OrderDesignFile.objects.create(
+                order=order,
+                file=f,
+                title=title or f.name
+            )
+        messages.success(request, "نقشه‌(های) جدید واحد طراحی با موفقیت آپلود شد.")
+    else:
+        messages.error(request, "لطفاً حداقل یک فایل نقشه انتخاب کنید.")
+        
+    return redirect("orders:order_detail", pk=order.pk)
+
+
+# -----------------------------
+# حذف نقشه طراحی
+# -----------------------------
+@login_required
+@require_POST
+def order_delete_design_file(request, file_id):
+    design_file = get_object_or_404(OrderDesignFile, pk=file_id)
+    order_pk = design_file.order.pk
+    file_name = design_file.file_name
+    design_file.file.delete(save=False)
+    design_file.delete()
+    messages.success(request, f"نقشه «{file_name}» با موفقیت حذف شد.")
+    return redirect("orders:order_detail", pk=order_pk)
 
 
 # -----------------------------
@@ -61,14 +117,26 @@ def order_edit(request, pk):
     order = get_object_or_404(Order, pk=pk)
 
     if request.method == "POST":
-        form = OrderForm(request.POST, instance=order)
+        form = OrderForm(request.POST, request.FILES, instance=order)
         formset = OrderItemFormSet(request.POST, instance=order)
 
         if form.is_valid() and formset.is_valid():
             form.save()
             formset.save()
-            # redirect به داشبورد تا تغییرات سریعاً دیده شوند
-            return redirect("core:dashboard")
+
+            # آپلود نقشه‌های جدید در ویرایش سفارش
+            files = request.FILES.getlist('design_files')
+            titles = request.POST.getlist('design_titles')
+            for idx, f in enumerate(files):
+                title = titles[idx] if idx < len(titles) else f.name
+                OrderDesignFile.objects.create(
+                    order=order,
+                    file=f,
+                    title=title or f.name
+                )
+
+            messages.success(request, f"سفارش {order.order_code} به‌روزرسانی شد.")
+            return redirect("orders:order_detail", pk=order.pk)
 
     else:
         form = OrderForm(instance=order)
@@ -77,7 +145,8 @@ def order_edit(request, pk):
     return render(request, "orders/order_edit.html", {
         "form": form,
         "formset": formset,
-        "order": order
+        "order": order,
+        "design_files": order.design_files.all()
     })
 
 
@@ -89,6 +158,7 @@ def order_edit(request, pk):
 def order_delete(request, pk):
     order = get_object_or_404(Order, pk=pk)
     order.delete()
+    messages.success(request, f"سفارش {order.order_code} حذف شد.")
     return redirect("orders:order_list")
 
 
@@ -98,3 +168,4 @@ def order_delete_confirm(request, pk):
     return render(request, "orders/order_delete_confirm.html", {
         "order": order
     })
+

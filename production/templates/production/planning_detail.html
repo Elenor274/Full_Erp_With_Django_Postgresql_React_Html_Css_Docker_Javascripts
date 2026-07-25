@@ -67,6 +67,70 @@
       </div>
     </div>
 
+    <!-- نقشه‌ها و فایل‌های واحد طراحی سفارش مرتبط -->
+    <div class="card-custom mb-4">
+      <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+        <h3 class="h5 mb-0 d-flex align-items-center gap-2">
+          <i data-feather="folder" class="text-primary" style="width:20px;height:20px;"></i>
+          نقشه‌ها و فایل‌های واحد طراحی (سفارش #{{ plan.order.order_code }})
+        </h3>
+        {% if plan.order %}
+        <a href="{% url 'orders:order_detail' plan.order.pk %}" class="btn btn-xs btn-outline-primary py-1 px-2.5 text-xxs">
+          <i data-feather="external-link" style="width:12px;height:12px;"></i> مدیریت نقشه‌ها در سفارش
+        </a>
+        {% endif %}
+      </div>
+
+      {% if plan.order and plan.order.design_files.all %}
+        <div class="table-responsive rounded border bg-white mb-0">
+          <table class="table table-hover align-middle mb-0" style="border: none;">
+            <thead class="bg-light">
+              <tr>
+                <th class="ps-3 text-xxs text-secondary py-2">نوع نرم‌افزار / فایل</th>
+                <th class="text-xxs text-secondary py-2">عنوان / نام نقشه</th>
+                <th class="text-xxs text-secondary text-center py-2">حجم</th>
+                <th class="text-xxs text-secondary text-center py-2">تاریخ آپلود</th>
+                <th class="pe-3 text-xxs text-secondary text-center py-2">دریافت فایل</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for df in plan.order.design_files.all %}
+              <tr>
+                <td class="ps-3">
+                  <span class="badge {{ df.file_type_info.badge }} text-xxs py-1 px-2 d-inline-flex align-items-center gap-1">
+                    <i data-feather="{{ df.file_type_info.icon }}" style="width:11px; height:11px;"></i>
+                    {{ df.file_type_info.label }}
+                  </span>
+                </td>
+                <td>
+                  <strong class="text-dark text-xs d-block">{{ df.title|default:df.file_name }}</strong>
+                  <span class="text-muted text-xxs font-mono dir-ltr d-block" style="font-size: 0.75rem;">{{ df.file_name }}</span>
+                </td>
+                <td class="text-center text-xs font-mono">{{ df.file_size_display }}</td>
+                <td class="text-center text-xxs text-muted font-mono">{{ df.uploaded_at|date:"Y/m/d H:i" }}</td>
+                <td class="pe-3 text-center">
+                  <div class="d-inline-flex gap-1">
+                    <a href="{{ df.file.url }}" target="_blank" class="btn btn-xs btn-outline-secondary py-1 px-2 text-xxs d-inline-flex align-items-center gap-1">
+                      <i data-feather="eye" style="width: 12px; height: 12px;"></i> مشاهده
+                    </a>
+                    <a href="{{ df.file.url }}" download class="btn btn-xs btn-outline-primary py-1 px-2 text-xxs d-inline-flex align-items-center gap-1">
+                      <i data-feather="download" style="width: 12px; height: 12px;"></i> دانلود
+                    </a>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="p-3 bg-light text-center rounded border text-muted text-xs">
+          <i data-feather="file" class="d-block mx-auto mb-1 opacity-50" style="width:20px;height:20px;"></i>
+          هیچ نقشه یا فایل طراحی برای سفارش مرتبط با این برنامه‌ریزی ثبت نشده است.
+        </div>
+      {% endif %}
+    </div>
+
     <!-- بخش کسر مواد اولیه و وضعیت انبار -->
     <div class="card-custom mb-4">
       <div class="border-bottom pb-3 mb-3">

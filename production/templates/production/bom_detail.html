@@ -1,0 +1,152 @@
+{% extends "core/base.html" %}
+{% load humanize %}
+
+{% block title %}جزئیات ساختار BOM - {{ bom.bom_code }}{% endblock %}
+{% block page_title %}شناسنامه و اجزای درخت محصول{% endblock %}
+
+{% block content %}
+<div class="fade-in-up">
+    <!-- Action Bar -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2">
+                <a href="{% url 'production:bom_list' %}" class="btn btn-sm btn-outline-soft">
+                    <i data-feather="arrow-right"></i>
+                    <span>بازگشت به لیست BOM</span>
+                </a>
+                <span class="badge bg-primary-subtle text-primary border font-mono fs-6">{{ bom.bom_code }}</span>
+            </div>
+            <h3 class="fw-bold text-gray-900 mt-2 mb-0">{{ bom.title }}</h3>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'production:bom_explosion' %}?product_id={{ bom.product.id }}" class="btn btn-outline-soft d-inline-flex align-items-center gap-2">
+                <i data-feather="layers"></i>
+                <span>انفجار مواد (MRP)</span>
+            </a>
+            <a href="{% url 'production:bom_edit' bom.pk %}" class="btn-primary-custom">
+                <i data-feather="edit-2"></i>
+                <span>ویرایش فرمول</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Product Summary Card -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-8">
+            <div class="card-custom h-100">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="p-3 bg-primary-subtle rounded-3 text-primary">
+                        <i data-feather="box" style="width:32px;height:32px;"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs text-muted d-block">محصول اصلی (والد)</span>
+                        <h4 class="fw-bold mb-1 text-dark">{{ bom.product.name }}</h4>
+                        <div class="d-flex align-items-center gap-3 text-xs text-muted font-mono">
+                            <span>کد کالا: {{ bom.product.code }}</span>
+                            <span>واحد سنجش اصلی: {{ bom.product.unit }}</span>
+                            <span>گروه کالا: {{ bom.product.group.name|default:"عمومی" }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% if bom.description %}
+                <div class="mt-3 pt-3 border-top text-xs text-muted">
+                    <strong>توضیحات فنی:</strong> {{ bom.description }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card-custom h-100 d-flex flex-column justify-content-center">
+                <div class="row text-center g-2">
+                    <div class="col-6 border-end">
+                        <span class="text-xs text-muted d-block">تعداد مواد / اجزا</span>
+                        <span class="font-mono fs-4 fw-bold text-primary">{{ bom.total_components_count }}</span>
+                    </div>
+                    <div class="col-6">
+                        <span class="text-xs text-muted d-block">وضعیت فرمول</span>
+                        {% if bom.is_active %}
+                        <span class="badge bg-success-subtle text-success border border-success-subtle mt-2">فعال اصلی</span>
+                        {% else %}
+                        <span class="badge bg-secondary-subtle text-muted border mt-2">غیرفعال</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tree Components Table -->
+    <div class="card-custom p-0 overflow-hidden mb-4">
+        <div class="p-3 bg-light border-bottom d-flex align-items-center justify-content-between">
+            <h6 class="fw-bold mb-0 text-dark">
+                <i data-feather="git-commit" class="me-2 text-primary"></i>
+                اجزای تشکیل‌دهنده و ضریب مصرف استاندارد (در ازای ۱ واحد {{ bom.product.unit }})
+            </h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-white">
+                    <tr>
+                        <th class="ps-4">#</th>
+                        <th>ماده اولیه / قطعه مصرفی</th>
+                        <th>مرحله کاری مصرف</th>
+                        <th class="text-center">مقدار خالص مصرف</th>
+                        <th class="text-center">درصد ضایعات (پرتی)</th>
+                        <th class="text-center">مقدار ناخالص کل</th>
+                        <th class="text-center">موجودی کنونی انبار</th>
+                        <th class="pe-4 text-start">ملاحظات قطعه</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in bom.items.all %}
+                    <tr>
+                        <td class="ps-4 font-mono text-muted text-xs">{{ forloop.counter }}</td>
+                        <td>
+                            <div class="fw-bold text-dark text-xs">{{ item.component.name }}</div>
+                            <span class="font-mono text-xxs text-muted">{{ item.component.code }}</span>
+                        </td>
+                        <td class="text-xs">
+                            {% if item.stage %}
+                            <span class="badge bg-light text-dark border">{{ item.stage.name }}</span>
+                            {% else %}
+                            <span class="text-muted text-xxs">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center font-mono fw-bold text-xs">
+                            {{ item.quantity }} {{ item.component.unit }}
+                        </td>
+                        <td class="text-center font-mono text-xs">
+                            {% if item.scrap_percentage > 0 %}
+                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle font-mono">
+                                {{ item.scrap_percentage }}%
+                            </span>
+                            {% else %}
+                            <span class="text-muted font-mono">0%</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center font-mono fw-bold text-xs text-primary">
+                            {{ item.gross_quantity_per_unit|floatformat:4 }} {{ item.component.unit }}
+                        </td>
+                        <td class="text-center font-mono text-xs">
+                            {% if item.component.real_stock > 0 %}
+                            <span class="text-success fw-bold">{{ item.component.real_stock|intcomma }} {{ item.component.unit }}</span>
+                            {% else %}
+                            <span class="text-danger fw-bold">0 {{ item.component.unit }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="pe-4 text-xs text-muted">{{ item.notes|default:"—" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">
+                            اقلامی برای این فرمول BOM ثبت نشده است.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,4 +1,5 @@
 {% extends "core/base.html" %}
+{% load humanize %}
 
 {% block title %}کاتالوگ محصولات - حاما پارچه{% endblock %}
 {% block page_title %}مدیریت محصولات و شناسنامه کالا{% endblock %}
@@ -73,16 +74,15 @@
             <table class="table table-hover align-middle mb-0" style="border: none;">
                 <thead class="bg-light">
                     <tr>
-                        <th class="ps-4 text-xs text-secondary py-3" style="border-bottom: 2px solid #e2e8f0; font-weight: 700;">کد کالا</th>
+                        <th class="ps-4 text-xs text-secondary py-3" style="border-bottom: 2px solid #e2e8f0; font-weight: 700;">کد کالا (ردیابی)</th>
                         <th class="text-xs text-secondary py-3" style="border-bottom: 2px solid #e2e8f0; font-weight: 700;">گروه کالا</th>
                         <th class="text-xs text-secondary py-3" style="border-bottom: 2px solid #e2e8f0; font-weight: 700;">شرح کالا</th>
                         <th class="text-xs text-secondary text-center py-3" style="border-bottom: 2px solid #e2e8f0; font-weight: 700;">واحد</th>
-                        <th class="text-xs text-secondary text-center py-3" style="border-bottom: 2px solid #e2e8f0; font-weight: 700;">موجودی اولیه</th>
-                        <th class="text-xs text-secondary text-center py-3" style="border-bottom: 2px solid #e2e8f0; font-weight: 700;">مجموع خروجی</th>
-                        <th class="text-xs text-secondary text-center py-3" style="border-bottom: 2px solid #e2e8f0; font-weight: 700;">موجودی واقعی</th>
+                        <th class="text-xs text-secondary text-center py-3" style="border-bottom: 2px solid #e2e8f0; font-weight: 700;">کل ورودی انبار</th>
+                        <th class="text-xs text-secondary text-center py-3" style="border-bottom: 2px solid #e2e8f0; font-weight: 700;">مصرف/خروجی</th>
+                        <th class="text-xs text-secondary text-center py-3" style="border-bottom: 2px solid #e2e8f0; font-weight: 700;">مانده موجودی</th>
                         <th class="text-xs text-secondary text-center py-3" style="border-bottom: 2px solid #e2e8f0; font-weight: 700;">قیمت واحد (ریال)</th>
-                        <th class="text-xs text-secondary text-center py-3" style="border-bottom: 2px solid #e2e8f0; font-weight: 700;">تاریخ ایجاد</th>
-                        <th class="pe-4 text-xs text-secondary text-center py-3" style="border-bottom: 2px solid #e2e8f0; font-weight: 700; width: 180px;">عملیات</th>
+                        <th class="pe-4 text-xs text-secondary text-center py-3" style="border-bottom: 2px solid #e2e8f0; font-weight: 700; width: 180px;">عملیات و ردیابی</th>
                     </tr>
                 </thead>
 
@@ -109,26 +109,28 @@
                         <!-- واحد -->
                         <td class="text-center text-xs text-muted">{{ p.unit }}</td>
                         
-                        <!-- موجودی اولیه -->
-                        <td class="text-center font-mono text-xs">{{ p.initial_stock|floatformat:0 }}</td>
+                        <!-- کل ورودی -->
+                        <td class="text-center font-mono text-xs text-primary fw-medium">{{ p.total_stock_in|floatformat:0|intcomma }}</td>
                         
-                        <!-- خروجی -->
-                        <td class="text-center font-mono text-xs text-danger">{{ p.stock_out|floatformat:0 }}</td>
+                        <!-- خروجی / مصرف -->
+                        <td class="text-center font-mono text-xs text-danger fw-medium">{{ p.total_stock_out|floatformat:0|intcomma }}</td>
                         
-                        <!-- موجودی واقعی -->
+                        <!-- مانده موجودی -->
                         <td class="text-center font-mono text-xs fw-bold">
-                            <span class="px-2.5 py-1 bg-light rounded-2 border text-dark">{{ p.real_stock|floatformat:0 }}</span>
+                            <span class="px-2.5 py-1 rounded-2 border {% if p.stock_balance > 0 %}bg-success-subtle text-success border-success-subtle{% else %}bg-danger-subtle text-danger border-danger-subtle{% endif %}">
+                                {{ p.stock_balance|floatformat:0|intcomma }} {{ p.unit }}
+                            </span>
                         </td>
 
                         <!-- قیمت واحد -->
-                        <td class="text-center font-mono text-xs text-success fw-bold">{{ p.unit_price|floatformat:0 }}</td>
+                        <td class="text-center font-mono text-xs text-dark fw-bold">{{ p.unit_price|floatformat:0|intcomma }}</td>
 
-                        <!-- تاریخ ایجاد -->
-                        <td class="text-center font-mono text-xs text-muted">{{ p.created_at|date:"Y/m/d" }}</td>
-
-                        <!-- عملیات -->
+                        <!-- عملیات و ردیابی -->
                         <td class="pe-4 text-center">
                             <div class="d-flex justify-content-center gap-1.5">
+                                <a href="{% url 'products:product_detail' p.id %}" class="btn-edit" style="background-color: rgba(79, 70, 229, 0.08) !important; color: var(--accent) !important;" title="ردیابی و رهگیری کالا">
+                                    <i data-feather="search" style="width: 12px; height: 12px;"></i> ردیابی
+                                </a>
                                 <a href="{% url 'products:product_edit' p.id %}" class="btn-edit">
                                     <i data-feather="edit-2" style="width: 12px; height: 12px;"></i> ویرایش
                                 </a>

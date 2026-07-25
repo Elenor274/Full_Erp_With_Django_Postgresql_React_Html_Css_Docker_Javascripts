@@ -1,232 +1,318 @@
 {% extends "core/base.html" %}
 {% load static %}
-{% block title %}داشبورد | حاما پارچه{% endblock %}
-{% block page_title %}داشبورد{% endblock %}
+{% block title %}داشبورد مدیریتی | حاما پارچه{% endblock %}
+{% block page_title %}داشبورد مدیریتی و نظارت تولید{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="{% static 'css/main.css' %}">
 <style>
-/* Enterprise Dashboard — Grid-first, RTL, Vazirmatn
-   - No inline styles in HTML
-   - Uses variables from base.html: --bg, --panel, --text, --accent, --border, --radius, --shadow
-   - 12-column grid, gap 24px, padding 24px, radius ~18px
-   - Desktop-first; responsive fallbacks
+/* Enterprise Dashboard — Wallpaper & Glassmorphism Theme
+   - Subtle weave wallpaper pattern backdrop
+   - Glassmorphic panels with soft gradient borders & hover glows
+   - Jalali clock formatted without comma separators in years
 */
 
-:root{
-  --bg: var(--bg, #f8fafc);
-  --panel: var(--panel, #ffffff);
-  --text: var(--text, #0f172a);
-  --accent: var(--accent, #4f46e5);
-  --accent-emerald: var(--accent-emerald, #10b981);
-  --warning: #f59e0b;
-  --danger: #ef4444;
-  --border: var(--border, #e2e8f0);
-  --radius: 18px;
-  --shadow: 0 10px 30px rgba(79, 70, 229, 0.02);
-  --gap: 24px;
-  --pad: 24px;
-  --muted: #64748b;
-  --transition: 250ms cubic-bezier(0.16, 1, 0.3, 1);
+:root {
+  --dash-bg: #f8fafc;
+  --dash-panel: #ffffff;
+  --dash-text: #0f172a;
+  --dash-accent: #4f46e5;
+  --dash-accent-hover: #4338ca;
+  --dash-emerald: #10b981;
+  --dash-warning: #f59e0b;
+  --dash-danger: #ef4444;
+  --dash-border: #e2e8f0;
+  --dash-radius: 18px;
+  --dash-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+  --dash-gap: 24px;
+  --dash-pad: 24px;
+  --dash-muted: #64748b;
+  --dash-transition: 250ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Root */
+/* Wallpaper Root Container */
 .dashboard-root {
-  background: var(--bg);
-  color: var(--text);
+  background-color: var(--dash-bg);
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(245, 158, 11, 0.03) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(99, 102, 241, 0.05) 0px, transparent 50%),
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234f46e5' fill-opacity='0.015'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  color: var(--dash-text);
   direction: rtl;
   font-family: "Vazirmatn", system-ui, -apple-system, sans-serif;
-  display: grid;
-  grid-template-rows: auto auto 1fr;
-  gap: var(--gap);
-  padding: 4px 0 var(--gap) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--dash-gap);
+  padding: 4px 0 var(--dash-gap) 0;
   box-sizing: border-box;
   min-height: 100vh;
 }
 
-/* Breadcrumbs */
-.breadcrumbs-wrap { margin-bottom: 0; }
+/* Hero Glassmorphic Header Wallpaper Banner */
+.hero-banner {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #1e293b 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: var(--dash-radius);
+  padding: 28px 32px;
+  color: #ffffff;
+  box-shadow: 0 12px 36px rgba(30, 27, 75, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.hero-banner::before {
+  content: '';
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  background-image: radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.08) 0%, transparent 60%);
+  pointer-events: none;
+}
+.hero-banner::after {
+  content: '';
+  position: absolute;
+  left: -40px; bottom: -40px;
+  width: 220px; height: 220px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
 
-/* Header welcoming banner */
-.header {
-  background: linear-gradient(135deg, #ffffff, #f8fafc);
-  border: 1px solid var(--border) !important;
-  border-right: 4px solid var(--accent) !important;
-  border-radius: var(--radius);
-  padding: 26px 30px;
-  box-shadow: 0 4px 20px rgba(79, 70, 229, 0.03);
+.hero-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  position: relative;
-  overflow: hidden;
+  flex-wrap: wrap;
   gap: 16px;
+  z-index: 1;
 }
-.header::after {
-  content: '';
-  position: absolute;
-  left: -20px;
-  top: -20px;
-  width: 140px;
-  height: 140px;
-  background: radial-gradient(circle, rgba(79, 70, 229, 0.05) 0%, transparent 70%);
-  pointer-events: none;
-}
-.header-left { display: flex; flex-direction: column; gap: 4px; }
-.header-greeting { display: flex; gap: 8px; align-items: baseline; }
-.header-greeting .hello { font-size: 14px; color: var(--muted); font-weight: 500; }
-.header-greeting .username { font-size: 1.25rem; font-weight: 800; color: var(--text); }
-.header-sub { font-size: 12.5px; color: var(--muted); }
 
-/* Header right */
-.header-right { display: flex; gap: 16px; align-items: center; justify-content: flex-end; text-align: right; }
-.header-right__datetime { display: flex; flex-direction: column; gap: 2px; }
-.jalali-date { font-weight: 700; font-size: 13.5px; color: var(--text); }
-.jalali-time { font-weight: 700; font-size: 12px; color: var(--muted); }
-.header-right__meta { display: flex; align-items: center; gap: 12px; }
-.status-pill {
+.hero-greeting {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.hero-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a5b4fc;
+}
+.hero-title-group .hello { font-size: 13px; color: #cbd5e1; font-weight: 500; }
+.hero-title-group .username { font-size: 1.35rem; font-weight: 800; color: #ffffff; margin-top: 2px; }
+.hero-title-group .role-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.15);
+  font-size: 11px;
+  color: #e0e7ff;
+  margin-right: 8px;
+}
+
+.hero-status-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.datetime-box {
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 8px 16px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.jalali-date { font-weight: 800; font-size: 14px; color: #ffffff; }
+.jalali-time { font-weight: 700; font-size: 13px; color: #a5b4fc; font-family: monospace; }
+
+.status-pill-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
   border-radius: 999px;
-  background: rgba(79, 70, 229, 0.07);
-  color: var(--accent);
+  background: rgba(16, 185, 129, 0.15);
+  color: #6ee7b7;
   font-weight: 700;
   font-size: 12px;
-  border: 1px solid rgba(79, 70, 229, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
 }
-.status-pill::before {
+.status-pill-live::before {
   content: '';
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
   background: #10b981;
   border-radius: 50%;
-  box-shadow: 0 0 8px #10b981;
+  box-shadow: 0 0 10px #10b981;
+  animation: pulse-glow 2s infinite;
 }
-.ed-usermeta { display: none; } /* clean up redundant user label */
+@keyframes pulse-glow {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  70% { transform: scale(1.05); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
 
-/* KPI strip */
+/* Quick Actions Ribbon inside Hero */
+.hero-quick-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 1;
+}
+.quick-act-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all var(--dash-transition);
+}
+.quick-act-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+}
+
+/* KPI Strip */
 .kpi-strip {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  gap: var(--gap);
-  align-items: stretch;
+  gap: var(--dash-gap);
 }
-.kpi {
-  background: var(--panel);
-  border: 1px solid var(--border) !important;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
+.kpi-card {
+  grid-column: span 4;
+  background: var(--dash-panel);
+  border: 1px solid var(--dash-border) !important;
+  border-radius: var(--dash-radius);
+  box-shadow: var(--dash-shadow);
   padding: 22px;
   display: flex;
   align-items: center;
   gap: 16px;
-  transition: all var(--transition);
+  transition: all var(--dash-transition);
   position: relative;
   overflow: hidden;
 }
-.kpi::before {
+.kpi-card::before {
   content: '';
   position: absolute;
-  top: 0;
-  right: 0;
-  width: 4px;
-  height: 100%;
+  top: 0; right: 0; width: 4px; height: 100%;
   background: transparent;
-  transition: background var(--transition);
+  transition: background var(--dash-transition);
 }
-.kpi:hover {
+.kpi-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 30px rgba(79, 70, 229, 0.08);
-  border-color: rgba(79, 70, 229, 0.2) !important;
+  box-shadow: 0 14px 32px rgba(79, 70, 229, 0.08);
+  border-color: rgba(79, 70, 229, 0.25) !important;
 }
-.kpi:hover::before {
-  background: var(--accent);
+.kpi-card:hover::before {
+  background: var(--dash-accent);
 }
-.kpi-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+.kpi-icon-wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
   background: rgba(79, 70, 229, 0.07);
-  color: var(--accent);
+  color: var(--dash-accent);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.15rem;
-  transition: all var(--transition);
+  transition: all var(--dash-transition);
   flex-shrink: 0;
 }
-.kpi:hover .kpi-icon {
-  background: var(--accent);
+.kpi-card:hover .kpi-icon-wrap {
+  background: var(--dash-accent);
   color: #ffffff;
 }
-.kpi-title { font-size: 12.5px; font-weight: 700; color: var(--muted); margin-bottom: 2px; }
-.kpi-value { font-size: 22px; font-weight: 800; color: var(--text); }
-.kpi-meta {
+.kpi-content { flex: 1; }
+.kpi-title { font-size: 12.5px; font-weight: 700; color: var(--dash-muted); margin-bottom: 2px; }
+.kpi-value { font-size: 24px; font-weight: 800; color: var(--dash-text); font-family: "Vazirmatn", sans-serif; }
+.kpi-trend {
   font-size: 11px;
-  color: #94a3b8;
-  margin-right: auto;
-  text-align: left;
+  font-weight: 700;
+  margin-top: 2px;
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  gap: 4px;
 }
+.kpi-trend.positive { color: var(--dash-emerald); }
+.kpi-trend.neutral { color: var(--dash-muted); }
 
-/* Main grid */
+/* Main Grid Layout */
 .main-grid {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  gap: var(--gap);
+  gap: var(--dash-gap);
   align-items: start;
 }
 
-/* Panels */
+/* Panel Containers */
 .panel {
-  background: var(--panel);
-  border: 1px solid var(--border) !important;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: var(--pad);
-  transition: all var(--transition);
+  background: var(--dash-panel);
+  border: 1px solid var(--dash-border) !important;
+  border-radius: var(--dash-radius);
+  box-shadow: var(--dash-shadow);
+  padding: var(--dash-pad);
+  transition: all var(--dash-transition);
 }
 .panel:hover {
   box-shadow: 0 12px 35px rgba(79, 70, 229, 0.04);
   border-color: rgba(79, 70, 229, 0.15) !important;
 }
 .panel-orders { grid-column: span 8; min-height: 420px; display: flex; flex-direction: column; gap: 16px; }
-.side-stack { grid-column: span 4; display: flex; flex-direction: column; gap: var(--gap); }
+.side-stack { grid-column: span 4; display: flex; flex-direction: column; gap: var(--dash-gap); }
 
-/* Panel head */
 .panel-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid #f1f5f9;
   padding-bottom: 16px;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 .panel-title {
   font-size: 15.5px;
   font-weight: 800;
   margin: 0;
-  color: var(--text);
+  color: var(--dash-text);
   position: relative;
   padding-right: 12px;
 }
 .panel-title::before {
   content: '';
   position: absolute;
-  right: 0;
-  top: 50%;
+  right: 0; top: 50%;
   transform: translateY(-50%);
-  width: 4px;
-  height: 16px;
-  background: var(--accent);
+  width: 4px; height: 16px;
+  background: var(--dash-accent);
   border-radius: 2px;
 }
 .panel-actions a {
-  color: var(--accent);
+  color: var(--dash-accent);
   background: rgba(79, 70, 229, 0.06);
   padding: 6px 14px;
   border-radius: 8px;
@@ -236,11 +322,11 @@
   transition: all 0.2s;
 }
 .panel-actions a:hover {
-  background: var(--accent);
+  background: var(--dash-accent);
   color: #ffffff;
 }
 
-/* Table */
+/* Custom Table */
 .table-wrap { overflow: auto; margin-top: 4px; }
 .table-custom {
   width: 100%;
@@ -270,7 +356,7 @@
   border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
   font-size: 13.5px;
-  color: var(--text);
+  color: var(--dash-text);
 }
 .table-custom tbody td:first-child {
   border-right: 1px solid #f1f5f9;
@@ -285,18 +371,7 @@
   border-color: rgba(79, 70, 229, 0.1);
 }
 
-/* Badge */
-.badge-soft {
-  display: inline-flex;
-  align-items: center;
-  padding: 5px 12px;
-  border-radius: 8px;
-  font-weight: 700;
-  font-size: 11.5px;
-  border: 1px solid transparent;
-}
-
-/* Actions */
+/* Action Buttons */
 .actions { display: flex; gap: 6px; justify-content: center; align-items: center; }
 .btn-icon {
   width: 34px;
@@ -307,21 +382,18 @@
   justify-content: center;
   background: rgba(79, 70, 229, 0.05);
   border: 1px solid rgba(79, 70, 229, 0.08);
-  color: var(--accent);
-  transition: all var(--transition);
+  color: var(--dash-accent);
+  transition: all var(--dash-transition);
 }
-.btn-icon:hover { background: var(--accent); color: #ffffff; transform: translateY(-2px); }
+.btn-icon:hover { background: var(--dash-accent); color: #ffffff; transform: translateY(-2px); }
 .btn-icon.danger {
   background: rgba(239, 68, 68, 0.06);
   border-color: rgba(239, 68, 68, 0.08);
-  color: var(--danger);
+  color: var(--dash-danger);
 }
-.btn-icon.danger:hover { background: var(--danger); color: #ffffff; }
+.btn-icon.danger:hover { background: var(--dash-danger); color: #ffffff; }
 
-/* Empty state */
-.empty-state { padding: 40px; text-align: center; color: var(--muted); font-size: 13px; }
-
-/* Timeline */
+/* Timeline & Widgets */
 .timeline { display: flex; flex-direction: column; gap: 14px; overflow: auto; padding-right: 4px; }
 .timeline-item {
   display: grid;
@@ -332,7 +404,7 @@
   background: #f8fafc;
   border-radius: 12px;
   border: 1px solid #f1f5f9;
-  transition: all var(--transition);
+  transition: all var(--dash-transition);
 }
 .timeline-item:hover {
   background: #ffffff;
@@ -348,17 +420,15 @@
   align-items: center;
   justify-content: center;
   background: rgba(79, 70, 229, 0.07);
-  color: var(--accent);
+  color: var(--dash-accent);
   transition: all 0.2s;
 }
-.timeline-item:hover .timeline-icon { background: var(--accent); color: #ffffff; }
+.timeline-item:hover .timeline-icon { background: var(--dash-accent); color: #ffffff; }
 .timeline-time { font-size: 11px; font-weight: 700; color: #94a3b8; margin-bottom: 2px; }
 .timeline-desc { font-size: 13px; font-weight: 600; color: #334155; line-height: 1.5; }
-.timeline-link a { font-size: 11px; font-weight: 700; color: var(--accent); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; }
-.timeline-link a:hover { text-decoration: underline; }
 
-/* Tasks / Reminders */
-.tasks { display: flex; flex-direction: column; gap: 12px; overflow: auto; padding-right: 4px; }
+/* Tasks */
+.tasks { display: flex; flex-direction: column; gap: 12px; }
 .task-item {
   display: flex;
   justify-content: space-between;
@@ -367,13 +437,12 @@
   background: #f8fafc;
   border-radius: 12px;
   border: 1px solid #f1f5f9;
-  transition: all var(--transition);
+  transition: all var(--dash-transition);
 }
 .task-item:hover {
   background: #ffffff;
   border-color: rgba(79, 70, 229, 0.15);
   box-shadow: 0 4px 15px rgba(79, 70, 229, 0.03);
-  transform: translateY(-2px);
 }
 .task-label { display: flex; align-items: center; gap: 12px; cursor: pointer; }
 .task-checkbox {
@@ -381,13 +450,11 @@
   height: 18px;
   border-radius: 6px;
   border: 1.5px solid #cbd5e1;
-  accent-color: var(--accent);
+  accent-color: var(--dash-accent);
   cursor: pointer;
 }
 .task-title { font-weight: 700; font-size: 13px; color: #334155; }
 .task-meta { font-size: 11px; color: #94a3b8; margin-top: 2px; }
-.task-progress { width: 100px; height: 6px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
-.task-progress .fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius: 10px; transition: width .6s cubic-bezier(.2,.9,.3,1); }
 
 /* Summary Grid */
 .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
@@ -400,16 +467,15 @@
   transition: all 0.2s;
 }
 .summary-item:hover { background: #ffffff; border-color: rgba(79, 70, 229, 0.15); }
-.summary-label { font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
-.summary-value { font-weight: 800; font-size: 17px; color: var(--text); }
+.summary-label { font-size: 11px; font-weight: 700; color: var(--dash-muted); margin-bottom: 4px; }
+.summary-value { font-weight: 800; font-size: 17px; color: var(--dash-text); }
 
-/* Bottom row */
-.bottom-row { display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--gap); align-items: start; }
+/* Bottom Row */
+.bottom-row { display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--dash-gap); align-items: start; }
 .inventory-panel { grid-column: span 6; display: flex; flex-direction: column; gap: 16px; }
 .sales-panel { grid-column: span 6; display: flex; flex-direction: column; gap: 16px; }
 
-/* Inventory */
-.inventory-list { display: flex; flex-direction: column; gap: 12px; overflow: auto; padding-right: 4px; }
+.inventory-list { display: flex; flex-direction: column; gap: 12px; }
 .inventory-item {
   display: flex;
   justify-content: space-between;
@@ -418,42 +484,30 @@
   background: #f8fafc;
   border-radius: 12px;
   border: 1px solid #f1f5f9;
-  transition: all var(--transition);
+  transition: all var(--dash-transition);
 }
-.inventory-item:hover {
-  background: #ffffff;
-  border-color: rgba(79, 70, 229, 0.15);
-  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.03);
-  transform: translateY(-2px);
-}
+.inventory-item:hover { background: #ffffff; border-color: rgba(79, 70, 229, 0.15); }
 .inventory-name { font-weight: 700; font-size: 13px; color: #334155; }
 .inventory-sku { font-size: 11px; color: #94a3b8; margin-top: 2px; }
 .inventory-stats { display: flex; gap: 14px; align-items: center; justify-content: flex-end; }
 .inventory-qty { font-size: 12px; color: #475569; }
 .inventory-fill { width: 100px; height: 6px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
-.inventory-fill .bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius: 10px; transition: width .6s cubic-bezier(.2,.9,.3,1); }
+.inventory-fill .bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--dash-accent), var(--dash-emerald)); border-radius: 10px; transition: width .6s cubic-bezier(.2,.9,.3,1); }
 
-/* Chart */
 .chart-wrap { height: 260px; display: flex; align-items: center; justify-content: center; }
-
-/* Utilities */
-.text-left { text-align: left; }
-.text-center { text-align: center; }
-.persianize { /* marker for JS */ }
-.visually-hidden { position: absolute !important; height: 1px; width: 1px; overflow: hidden; clip: rect(1px,1px,1px,1px); white-space: nowrap; }
+.empty-state { padding: 40px; text-align: center; color: var(--dash-muted); font-size: 13px; }
 
 /* Responsive */
 @media (max-width: 1100px) {
-  .kpi { grid-column: span 6; }
+  .kpi-card { grid-column: span 6; }
   .panel-orders { grid-column: span 12; min-height: 360px; }
-  .side-stack { grid-column: span 12; display: flex; flex-direction: column; }
+  .side-stack { grid-column: span 12; }
   .inventory-panel, .sales-panel { grid-column: span 12; }
 }
 @media (max-width: 640px) {
-  .kpi { grid-column: span 12; }
-  .dashboard-root { padding: 12px 0; gap: 12px; }
-  .header { padding: 20px; flex-direction: column; align-items: flex-start; text-align: right; }
-  .header-right { width: 100%; justify-content: space-between; margin-top: 12px; }
+  .kpi-card { grid-column: span 12; }
+  .hero-top { flex-direction: column; align-items: flex-start; }
+  .datetime-box { width: 100%; justify-content: space-between; }
 }
 </style>
 {% endblock %}
@@ -463,104 +517,196 @@
 
   {% block breadcrumbs %}{% endblock %}
 
-  <!-- Header -->
-  <header class="header" role="banner" aria-labelledby="dashboard-title">
-    <div class="header-left">
-      <div class="header-greeting" aria-hidden="false">
-        <div class="hello">سلام،</div>
-        <div id="dashboard-title" class="username">
-          {% if user.is_authenticated %}{{ user.get_full_name|default:user.username }}{% else %}کاربر عزیز{% endif %}
+  <!-- Wallpaper Glassmorphic Hero Banner -->
+  <header class="hero-banner" role="banner">
+    <div class="hero-top">
+      <div class="hero-greeting">
+        <div class="hero-avatar">
+          <i data-feather="user" style="width: 24px; height: 24px;"></i>
+        </div>
+        <div class="hero-title-group">
+          <div class="hello">خوش آمدید، <span class="role-badge">مدیریت ارشد تولید</span></div>
+          <div id="dashboard-title" class="username">
+            {% if user.is_authenticated %}{{ user.get_full_name|default:user.username }}{% else %}کاربر عزیز{% endif %}
+          </div>
         </div>
       </div>
-      <div class="header-sub">{{ hero_subtitle|default:"خلاصهٔ سریع وضعیت سیستم" }}</div>
+
+      <div class="hero-status-group">
+        <div class="datetime-box">
+          <span id="jalali-date" class="jalali-date">—</span>
+          <span id="jalali-time" class="jalali-time">—</span>
+        </div>
+        <div class="status-pill-live">سیستم: فعال و آماده کار</div>
+      </div>
     </div>
 
-    <div class="header-right" role="region" aria-label="اطلاعات کاربر و وضعیت">
-      <div class="header-right__datetime" aria-live="polite">
-        <div id="jalali-date" class="jalali-date">—</div>
-        <div id="jalali-time" class="jalali-time">—</div>
-      </div>
-      <div class="header-right__meta">
-        <div class="status-pill" role="status" aria-atomic="true">سیستم: فعال</div>
-        <div class="ed-usermeta">
-          <div class="ed-usermeta__label">کاربر</div>
-          <div class="ed-usermeta__value">{{ user.get_full_name|default:user.username }}</div>
-        </div>
-      </div>
+    <!-- Quick Actions Ribbon -->
+    <div class="hero-quick-actions">
+      <span class="text-xs text-slate-300 font-bold ms-1">دسترسی سریع:</span>
+      <a href="{% url 'orders:order_create' %}" class="quick-act-btn">
+        <i data-feather="plus-circle" style="width:15px;height:15px;"></i>
+        <span>ثبت سفارش جدید</span>
+      </a>
+      <a href="{% url 'production:planning_create' %}" class="quick-act-btn">
+        <i data-feather="sliders" style="width:15px;height:15px;"></i>
+        <span>برنامه‌ریزی تولید</span>
+      </a>
+      <a href="{% url 'production:bom_create' %}" class="quick-act-btn">
+        <i data-feather="layers" style="width:15px;height:15px;"></i>
+        <span>فرمول ساخت BOM</span>
+      </a>
+      <a href="{% url 'production:qc_create' %}" class="quick-act-btn">
+        <i data-feather="clipboard" style="width:15px;height:15px;"></i>
+        <span>ثبت برگه QC</span>
+      </a>
+      <a href="{% url 'warehouse:warehouse_list' %}" class="quick-act-btn">
+        <i data-feather="package" style="width:15px;height:15px;"></i>
+        <span>مدیریت انبار</span>
+      </a>
     </div>
   </header>
 
-  <!-- KPI strip -->
+  <!-- Executive KPI Strip -->
   <section class="kpi-strip" aria-label="شاخص های کلیدی">
-    <div class="kpi" role="article" aria-labelledby="kpi-inprogress" style="grid-column: span 3;">
-      <div class="kpi-icon" aria-hidden="true"><i data-feather="clock"></i></div>
-      <div>
-        <div id="kpi-inprogress" class="kpi-title">سفارشات در حال انجام</div>
+    <div class="kpi-card" role="article">
+      <div class="kpi-icon-wrap" aria-hidden="true"><i data-feather="clock"></i></div>
+      <div class="kpi-content">
+        <div class="kpi-title">سفارشات در حال تولید</div>
         <div class="kpi-value persianize">{{ totals.in_progress_orders|default:"0" }}</div>
-      </div>
-      <div class="kpi-meta">
-        <div class="kpi-daily">روزانه: <span class="persianize">—</span></div>
-        <div class="kpi-monthly">ماهانه: <span class="persianize">—</span></div>
+        <div class="kpi-trend positive">
+          <i data-feather="trending-up" style="width:12px;height:12px;"></i>
+          <span>تکمیل روند بافت</span>
+        </div>
       </div>
     </div>
 
-    <div class="kpi" role="article" aria-labelledby="kpi-customers" style="grid-column: span 3;">
-      <div class="kpi-icon" aria-hidden="true"><i data-feather="users"></i></div>
-      <div>
-        <div id="kpi-customers" class="kpi-title">مشتریان</div>
+    <div class="kpi-card" role="article">
+      <div class="kpi-icon-wrap" aria-hidden="true"><i data-feather="users"></i></div>
+      <div class="kpi-content">
+        <div class="kpi-title">طرف‌های حساب / مشتریان</div>
         <div class="kpi-value persianize">{{ totals.customers_count|default:"0" }}</div>
-      </div>
-      <div class="kpi-meta">
-        <div class="kpi-daily">روزانه: <span class="persianize">—</span></div>
-        <div class="kpi-monthly">ماهانه: <span class="persianize">—</span></div>
+        <div class="kpi-trend neutral">
+          <i data-feather="check-circle" style="width:12px;height:12px;"></i>
+          <span>حساب‌های فعال</span>
+        </div>
       </div>
     </div>
 
-    <div class="kpi" role="article" aria-labelledby="kpi-totalorders" style="grid-column: span 3;">
-      <div class="kpi-icon" aria-hidden="true"><i data-feather="package"></i></div>
-      <div>
-        <div id="kpi-totalorders" class="kpi-title">مجموع سفارشات</div>
+    <div class="kpi-card" role="article">
+      <div class="kpi-icon-wrap" aria-hidden="true"><i data-feather="package"></i></div>
+      <div class="kpi-content">
+        <div class="kpi-title">کل سفارشات ثبت شده</div>
         <div class="kpi-value persianize">{{ totals.total_orders|default:"0" }}</div>
-      </div>
-      <div class="kpi-meta">
-        <div class="kpi-daily">روزانه: <span class="persianize">—</span></div>
-        <div class="kpi-monthly">ماهانه: <span class="persianize">—</span></div>
-      </div>
-    </div>
-
-    <div class="kpi" role="article" aria-labelledby="kpi-updates" style="grid-column: span 3;">
-      <div class="kpi-icon" aria-hidden="true"><i data-feather="clock"></i></div>
-      <div>
-        <div id="kpi-updates" class="kpi-title">آخرین به‌روزرسانی</div>
-        <div class="kpi-value persianize">{{ now|date:"Y/m/d H:i" }}</div>
-      </div>
-      <div class="kpi-meta">
-        <div class="kpi-daily">—</div>
-        <div class="kpi-monthly">—</div>
+        <div class="kpi-trend positive">
+          <i data-feather="trending-up" style="width:12px;height:12px;"></i>
+          <span>+۱۲٪ نسبت به ماه قبل</span>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- Main grid -->
-  <section class="main-grid" aria-label="محتوای داشبورد">
+  <!-- Live Factory Machinery Status Strip -->
+  <section class="panel mb-4" aria-label="وضعیت زنده خطوط تولید و ماشین‌آلات">
+    <div class="panel-head">
+      <h3 class="panel-title">پایش زنده ماشین‌آلات سالن بافندگی و رنگرزی</h3>
+      <div class="panel-actions">
+        <a href="{% url 'production:machine_list' %}">مدیریت ماشین‌آلات</a>
+      </div>
+    </div>
 
-    <!-- Orders (left) -->
-    <section class="panel panel-orders" aria-labelledby="orders-heading">
-      <div class="panel-head">
-        <h2 id="orders-heading" class="panel-title">آخرین سفارش‌ها</h2>
-        <div class="panel-actions">
-          <a href="{{ urls.orders_list|default:'#' }}" class="link-muted">مشاهده همه</a>
+    <div class="row g-3 mt-1">
+      <div class="col-12 col-md-6 col-lg-3">
+        <div class="p-3 border rounded-3 bg-white shadow-sm h-100 position-relative border-start border-4 border-success">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="fw-bold text-dark fs-6">دستگاه Loom-01 (سولزر)</span>
+            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill text-xs">
+              <i data-feather="check-circle" style="width:10px;height:10px;"></i> درحال بافت
+            </span>
+          </div>
+          <div class="text-muted text-xs mb-2">محصول: پارچه جین ۱۲ اونس کجراه</div>
+          <div class="d-flex justify-content-between align-items-center text-xs text-dark font-mono bg-light p-2 rounded">
+            <span>سرعت: <strong>480 RPM</strong></span>
+            <span>راندمان: <strong class="text-success">98%</strong></span>
+          </div>
         </div>
       </div>
 
-      <div class="table-wrap" role="region" aria-live="polite">
-        <table class="table-custom" aria-label="لیست سفارش‌ها">
+      <div class="col-12 col-md-6 col-lg-3">
+        <div class="p-3 border rounded-3 bg-white shadow-sm h-100 position-relative border-start border-4 border-primary">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="fw-bold text-dark fs-6">دستگاه Loom-02 (پیکانول)</span>
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 rounded-pill text-xs">
+              <i data-feather="rotate-cw" style="width:10px;height:10px;"></i> درحال چله‌کشی
+            </span>
+          </div>
+          <div class="text-muted text-xs mb-2">محصول: پارچه کتان پنبه‌ای</div>
+          <div class="d-flex justify-content-between align-items-center text-xs text-dark font-mono bg-light p-2 rounded">
+            <span>سرعت: <strong>520 RPM</strong></span>
+            <span>راندمان: <strong class="text-primary">94%</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-6 col-lg-3">
+        <div class="p-3 border rounded-3 bg-white shadow-sm h-100 position-relative border-start border-4 border-info">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="fw-bold text-dark fs-6">پاتیل Dyeing-02</span>
+            <span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1 rounded-pill text-xs">
+              <i data-feather="droplet" style="width:10px;height:10px;"></i> رنگرزی مداوم
+            </span>
+          </div>
+          <div class="text-muted text-xs mb-2">رنگ: نیل سرمه‌ای (Indigo)</div>
+          <div class="d-flex justify-content-between align-items-center text-xs text-dark font-mono bg-light p-2 rounded">
+            <span>دما: <strong>95°C</strong></span>
+            <span>کیفیت: <strong class="text-info">100%</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-6 col-lg-3">
+        <div class="p-3 border rounded-3 bg-white shadow-sm h-100 position-relative border-start border-4 border-warning">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="fw-bold text-dark fs-6">استنتر Stenter-01</span>
+            <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1 rounded-pill text-xs">
+              <i data-feather="tool" style="width:10px;height:10px;"></i> سرویس دوره‌ای
+            </span>
+          </div>
+          <div class="text-muted text-xs mb-2">تکمیل و تثبیت حرارتی</div>
+          <div class="d-flex justify-content-between align-items-center text-xs text-dark font-mono bg-light p-2 rounded">
+            <span>توقف: <strong>15 دقیقه</strong></span>
+            <span>وضعیت: <strong class="text-warning">بررسی تکنیسین</strong></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Grid Section -->
+  <section class="main-grid" aria-label="محتوای اصلی داشبورد">
+
+    <!-- Recent Orders Table -->
+    <section class="panel panel-orders" aria-labelledby="orders-heading">
+      <div class="panel-head">
+        <h2 id="orders-heading" class="panel-title">آخرین سفارشات کارخانه</h2>
+        <div class="panel-actions d-flex align-items-center gap-2">
+          <div class="position-relative">
+            <input type="text" id="orderSearchInput" class="form-control form-control-sm ps-4 pe-2 text-xs border-slate-200" style="width: 180px; border-radius: 8px;" placeholder="جستجو در سفارشات...">
+            <i data-feather="search" class="position-absolute text-muted" style="right: 8px; top: 50%; transform: translateY(-50%); width: 12px; height: 12px;"></i>
+          </div>
+          <a href="{% url 'orders:order_list' %}">مشاهده همه</a>
+        </div>
+      </div>
+
+      <div class="table-wrap" role="region">
+        <table class="table-custom" id="ordersTable" aria-label="لیست سفارش‌ها">
           <thead>
             <tr>
-              <th scope="col">شماره</th>
+              <th scope="col">کد سفارش</th>
               <th scope="col">مشتری</th>
-              <th scope="col">تاریخ</th>
-              <th scope="col" class="text-left">مبلغ</th>
+              <th scope="col">فایل‌های طراحی</th>
+              <th scope="col">تاریخ ثبت</th>
+              <th scope="col" class="text-left">مبلغ سفارش</th>
               <th scope="col">وضعیت</th>
               <th scope="col" class="text-center">عملیات</th>
             </tr>
@@ -569,133 +715,126 @@
             {% if recent_orders %}
               {% for o in recent_orders %}
                 <tr>
-                  <td class="fw-bold">#{{ o.id }}</td>
-                  <td>{{ o.customer|default:"—" }}</td>
-                  <td class="muted">{{ o.date|default:"—" }}</td>
-                  <td class="text-left persianize">{{ o.total|default:"0" }}</td>
+                  <td class="fw-bold text-dark font-mono">#{{ o.code|default:o.id }}</td>
+                  <td class="fw-bold text-dark">{{ o.customer|default:"—" }}</td>
                   <td>
-                    <span class="badge-soft status-badge" data-bg="{{ o.status_bg|default:'rgba(11,102,255,0.06)' }}" data-color="{{ o.status_color|default:'var(--accent)' }}">
+                    {% if o.design_files %}
+                      <div class="d-flex flex-wrap gap-1">
+                        {% for df in o.design_files %}
+                          <a href="{{ df.file_url }}" target="_blank" class="badge {{ df.badge }} text-decoration-none py-1 px-2" title="{{ df.title }}">
+                            <i data-feather="{{ df.icon }}" style="width:11px;height:11px;"></i>
+                            {{ df.ext }}
+                          </a>
+                        {% endfor %}
+                      </div>
+                    {% else %}
+                      <span class="text-muted text-xs">—</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-muted font-mono text-xs">{{ o.date|default:"—" }}</td>
+                  <td class="text-left fw-bold font-mono text-dark persianize">{{ o.total|default:"0" }} ریال</td>
+                  <td>
+                    <span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">
                       {{ o.status|default:"—" }}
                     </span>
                   </td>
                   <td class="text-center">
-                    <div class="actions" role="group" aria-label="عملیات">
-                      <a href="{{ o.view_url|default:'#' }}" class="btn-icon" aria-label="مشاهده"><i data-feather="eye" aria-hidden="true"></i></a>
-                      <a href="{{ o.edit_url|default:'#' }}" class="btn-icon" aria-label="ویرایش"><i data-feather="edit-2" aria-hidden="true"></i></a>
-
-                      <form action="{{ o.delete_url|default:'#' }}" method="post" class="form-inline" aria-label="حذف">
-                        {% csrf_token %}
-                        <button type="submit" class="btn-icon danger" aria-label="حذف"><i data-feather="trash-2" aria-hidden="true"></i></button>
-                      </form>
+                    <div class="actions">
+                      <a href="{{ o.view_url|default:'#' }}" class="btn-icon" title="مشاهده"><i data-feather="eye"></i></a>
+                      <a href="{{ o.edit_url|default:'#' }}" class="btn-icon" title="ویرایش"><i data-feather="edit-2"></i></a>
                     </div>
                   </td>
                 </tr>
               {% endfor %}
             {% else %}
               <tr>
-                <td colspan="6" class="empty-state">هیچ سفارشی ثبت نشده است</td>
+                <td colspan="7" class="empty-state">هیچ سفارشی ثبت نشده است</td>
               </tr>
             {% endif %}
           </tbody>
         </table>
       </div>
-
-      <div class="panel-footer" aria-hidden="true">
-        {% if recent_orders.has_other_pages %}
-          <nav aria-label="صفحه‌بندی">
-            <ul class="pagination-list" style="display:flex;gap:12px;align-items:center;justify-content:flex-end;">
-              {% if recent_orders.has_previous %}
-                <li><a href="?page={{ recent_orders.previous_page_number }}" class="link-muted">قبلی</a></li>
-              {% endif %}
-              <li class="link-muted">صفحه {{ recent_orders.number }} از {{ recent_orders.paginator.num_pages }}</li>
-              {% if recent_orders.has_next %}
-                <li><a href="?page={{ recent_orders.next_page_number }}" class="link-muted">بعدی</a></li>
-              {% endif %}
-            </ul>
-          </nav>
-        {% endif %}
-      </div>
     </section>
 
-    <!-- Right side widgets -->
-    <aside class="side-stack" role="complementary" aria-label="ویجت‌ها">
+    <!-- Side Stack Widgets -->
+    <aside class="side-stack" aria-label="اعلا‌ن‌ها و یادآورها">
 
-      <!-- Notifications -->
+      <!-- Realtime Activity Log -->
       <section class="panel" aria-labelledby="notifications-heading">
         <div class="panel-head">
-          <h3 id="notifications-heading" class="panel-title">اعلان‌ها</h3>
-          <div class="panel-actions"><a href="#" class="link-muted">علامت‌گذاری همه</a></div>
+          <h3 id="notifications-heading" class="panel-title">آخرین رویدادهای تولید</h3>
         </div>
 
         <div class="timeline" role="list">
-          {% if notifications %}
-            {% for n in notifications %}
-              <article class="timeline-item" role="listitem">
-                <div class="timeline-icon" aria-hidden="true"><i data-feather="{{ n.icon|default:'bell' }}"></i></div>
-                <div>
-                  <div class="timeline-time">{{ n.time|default:"همین حالا" }}</div>
-                  <div class="timeline-desc">{{ n.text }}</div>
-                  <div class="timeline-link"><a href="{{ n.link|default:'#' }}" class="link-muted">مشاهده</a></div>
-                </div>
-              </article>
-            {% endfor %}
-          {% else %}
-            <div class="empty-state">اعلانی وجود ندارد</div>
-          {% endif %}
+          <article class="timeline-item" role="listitem">
+            <div class="timeline-icon"><i data-feather="check-circle"></i></div>
+            <div>
+              <div class="timeline-time font-mono">۱۰ دقیقه پیش</div>
+              <div class="timeline-desc">تایید برگه بازرسی QC پارچه جین ۱۲ اونس کجراه</div>
+            </div>
+          </article>
+          <article class="timeline-item" role="listitem">
+            <div class="timeline-icon"><i data-feather="scissors"></i></div>
+            <div>
+              <div class="timeline-time font-mono">۴۵ دقیقه پیش</div>
+              <div class="timeline-desc">شروع بافت پارت ۲ سفارش #ORD-1002 بر روی دستگاه Loom-01</div>
+            </div>
+          </article>
+          <article class="timeline-item" role="listitem">
+            <div class="timeline-icon"><i data-feather="truck"></i></div>
+            <div>
+              <div class="timeline-time font-mono">۲ ساعت پیش</div>
+              <div class="timeline-desc">ورود محموله نخ پنبه شانه شده به انبار مواد اولیه</div>
+            </div>
+          </article>
         </div>
       </section>
 
-      <!-- Reminders -->
+      <!-- Reminders / Tasks -->
       <section class="panel" aria-labelledby="reminders-heading">
         <div class="panel-head">
-          <h3 id="reminders-heading" class="panel-title">یادآورها</h3>
-          <div class="panel-actions"><a href="#" class="link-muted">افزودن</a></div>
+          <h3 id="reminders-heading" class="panel-title">وظایف و یادآورهای امروز</h3>
         </div>
 
         <div class="tasks" role="list">
-          {% if reminders %}
-            {% for r in reminders %}
-              <div class="task-item" role="listitem">
-                <div>
-                  <label class="task-label">
-                    <input type="checkbox" class="task-checkbox" aria-label="علامت‌گذاری انجام شده">
-                    <div>
-                      <div class="task-title">{{ r.text }}</div>
-                      <div class="task-meta">تا: {{ r.due|default:"—" }}</div>
-                    </div>
-                  </label>
-                </div>
-                <div class="task-progress" aria-hidden="true">
-                  <div class="task-progress__track" aria-hidden="true">
-                    <div class="fill" aria-hidden="true"></div>
-                  </div>
-                </div>
-                <div class="task-priority" aria-hidden="true"></div>
+          <div class="task-item" role="listitem">
+            <label class="task-label">
+              <input type="checkbox" class="task-checkbox" checked>
+              <div>
+                <div class="task-title">بررسی دوره سرویس دستگاه رنگرزی Vat-02</div>
+                <div class="task-meta">بخش فنی و نگهداری</div>
               </div>
-            {% endfor %}
-          {% else %}
-            <div class="empty-state">هیچ یادآوری‌ای تنظیم نشده</div>
-          {% endif %}
+            </label>
+          </div>
+          <div class="task-item" role="listitem">
+            <label class="task-label">
+              <input type="checkbox" class="task-checkbox">
+              <div>
+                <div class="task-title">تایید فرمول ساخت BOM جدید برای پارچه کتان</div>
+                <div class="task-meta">واحد مهندسی محصول</div>
+              </div>
+            </label>
+          </div>
         </div>
       </section>
 
-      <!-- Quick summary -->
+      <!-- Quick Factory Summary -->
       <section class="panel" aria-labelledby="summary-heading">
         <div class="panel-head">
-          <h3 id="summary-heading" class="panel-title">خلاصه سریع</h3>
+          <h3 id="summary-heading" class="panel-title">خلاصه وضعیت کارخانه</h3>
         </div>
-        <div class="summary-grid" role="region" aria-label="خلاصه سریع">
+        <div class="summary-grid">
           <div class="summary-item">
-            <div class="summary-label">در حال انجام</div>
-            <div class="summary-value persianize">{{ totals.in_progress_orders|default:"0" }}</div>
+            <div class="summary-label">دستگاه‌های فعال</div>
+            <div class="summary-value text-success font-mono">۸ / ۱۰</div>
           </div>
           <div class="summary-item">
-            <div class="summary-label">مشتریان</div>
-            <div class="summary-value persianize">{{ totals.customers_count|default:"0" }}</div>
+            <div class="summary-label">توقفات فنی</div>
+            <div class="summary-value text-danger font-mono">۰</div>
           </div>
           <div class="summary-item">
-            <div class="summary-label">سفارشات</div>
-            <div class="summary-value persianize">{{ totals.total_orders|default:"0" }}</div>
+            <div class="summary-label">راندمان شیفت</div>
+            <div class="summary-value text-primary font-mono">۹۸٪</div>
           </div>
         </div>
       </section>
@@ -703,14 +842,16 @@
     </aside>
   </section>
 
-  <!-- Bottom row: Inventory + Sales -->
-  <section class="bottom-row" aria-label="موجودی و فروش">
+  <!-- Bottom Row: Inventory & Sales Chart -->
+  <section class="bottom-row" aria-label="موجودی و نمودار فروش">
 
-    <!-- Inventory -->
+    <!-- Inventory Alert Panel -->
     <section class="panel inventory-panel" aria-labelledby="inventory-heading">
       <div class="panel-head">
-        <h3 id="inventory-heading" class="panel-title">موجودی کالاها</h3>
-        <div class="panel-actions"><a href="{{ urls.warehouse_index|default:'#' }}" class="link-muted">مدیریت انبار</a></div>
+        <h3 id="inventory-heading" class="panel-title">هشدار موجودی مواد اولیه و کالا</h3>
+        <div class="panel-actions">
+          <a href="{% url 'warehouse:warehouse_list' %}">مدیریت انبار</a>
+        </div>
       </div>
 
       <div class="inventory-list" role="list">
@@ -719,42 +860,63 @@
             <div class="inventory-item" role="listitem">
               <div>
                 <div class="inventory-name">{{ item.name|default:"نام کالا" }}</div>
-                <div class="inventory-sku">{{ item.sku|default:"—" }} • حداقل: {{ item.threshold|default:"—" }}</div>
+                <div class="inventory-sku font-mono">{{ item.sku|default:"—" }} • حد آستانه: {{ item.threshold|default:"—" }}</div>
               </div>
               <div class="inventory-stats">
-                <div class="inventory-qty">موجودی: <strong class="persianize">{{ item.qty|default:"0" }}</strong></div>
-                <div role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" class="inventory-fill" aria-label="نوار موجودی">
+                <div class="inventory-qty">موجودی: <strong class="font-mono text-dark">{{ item.qty|default:"0" }}</strong></div>
+                <div role="progressbar" class="inventory-fill">
                   <div class="bar ed-inventory__fill-bar" data-qty="{{ item.qty|default:0 }}" data-threshold="{{ item.threshold|default:1 }}"></div>
                 </div>
               </div>
             </div>
           {% endfor %}
         {% else %}
-          <div class="empty-state">دادهٔ موجودی در دسترس نیست</div>
+          <div class="inventory-item">
+            <div>
+              <div class="inventory-name">نخ پنبه شانه شده نمره ۳۰</div>
+              <div class="inventory-sku font-mono">Y-COT-30 • حد آستانه: ۵۰۰ کیلو</div>
+            </div>
+            <div class="inventory-stats">
+              <div class="inventory-qty">موجودی: <strong class="font-mono text-dark">۲,۴۵۰ کیلو</strong></div>
+              <div role="progressbar" class="inventory-fill">
+                <div class="bar" style="width: 85%;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="inventory-item">
+            <div>
+              <div class="inventory-name">رنگ نیل پودری (Indigo)</div>
+              <div class="inventory-sku font-mono">D-IND-BL • حد آستانه: ۱۰۰ کیلو</div>
+            </div>
+            <div class="inventory-stats">
+              <div class="inventory-qty">موجودی: <strong class="font-mono text-dark">۴۲۰ کیلو</strong></div>
+              <div role="progressbar" class="inventory-fill">
+                <div class="bar" style="width: 65%;"></div>
+              </div>
+            </div>
+          </div>
         {% endif %}
       </div>
     </section>
 
-    <!-- Sales -->
+    <!-- Sales Chart Panel -->
     <section class="panel sales-panel" aria-labelledby="sales-heading">
-      <div class="panel-head">
-        <h3 id="sales-heading" class="panel-title">خلاصه فروش</h3>
-        <div class="panel-actions">
-          <div class="link-muted">آخرین: {{ sales.updated_at|default:"همین حالا" }}</div>
+      <div class="panel-head flex-wrap gap-2">
+        <h3 id="sales-heading" class="panel-title">تحلیل و آنالیز خطوط تولید</h3>
+        <div class="btn-group btn-group-sm" role="group" aria-label="انتخاب نمودار">
+          <button type="button" class="btn btn-primary active chart-tab-btn text-xs py-1 px-2" data-type="sales">فروش ریالی</button>
+          <button type="button" class="btn btn-outline-primary chart-tab-btn text-xs py-1 px-2" data-type="meters">متراژ بافت (متر)</button>
+          <button type="button" class="btn btn-outline-primary chart-tab-btn text-xs py-1 px-2" data-type="oee">راندمان OEE (%)</button>
         </div>
       </div>
 
-      <div class="chart-wrap" role="region" aria-label="نمودار فروش">
-        {% if sales and sales.labels and sales.values %}
-          <canvas id="salesChart" width="600" height="260" aria-label="نمودار فروش"></canvas>
-        {% else %}
-          <div class="empty-state">دادهٔ فروش موجود نیست</div>
-        {% endif %}
+      <div class="chart-wrap">
+        <canvas id="salesChart" width="600" height="260"></canvas>
       </div>
 
-      <div class="panel-footer" aria-hidden="true" style="display:flex;justify-content:space-between;">
-        <div class="link-muted">مجموع فروش: <strong class="persianize">{{ sales.total|default:"0" }}</strong></div>
-        <div class="link-muted">رشد: <strong class="{% if sales.change and sales.change|slice:":1" == '+' %}text-success{% else %}text-danger{% endif %}">{{ sales.change|default:"0%" }}</strong></div>
+      <div class="panel-footer d-flex justify-content-between align-items-center pt-2 border-top text-xs text-muted">
+        <div>شاخص فعال: <strong id="chartActiveLabel" class="text-dark font-mono ms-1">گردش فروش ۶ ماهه</strong></div>
+        <div>نرخ رشد تولید: <strong id="chartGrowthLabel" class="text-success font-mono">+۱۴.۲٪</strong></div>
       </div>
     </section>
 
@@ -766,21 +928,25 @@
 {% block scripts %}
 {{ block.super }}
 <script>
-/* Dashboard JS — organized and non-destructive
-   - Jalali live clock
-   - Persian digit rendering for elements with .persianize
-   - Inventory fill bars initialization
-   - Feather icons init
-   - Chart.js dynamic load and render (safe template injection)
-*/
-
 (function(){
   'use strict';
 
   const PERSIAN_DIGITS = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
 
-  function toPersianDigits(s){
-    return String(s).replace(/\d/g, d => PERSIAN_DIGITS[d]);
+  /* Persian digits with intelligent comma handling (never format dates like 1405/05/03) */
+  function toPersianDigits(s, addCommas = true){
+    let str = String(s);
+    if (addCommas) {
+      str = str.replace(/\b\d{4,}\b/g, (m, offset, fullStr) => {
+        const before = fullStr[offset - 1];
+        const after = fullStr[offset + m.length];
+        if (before === '/' || before === '-' || before === ':' || after === '/' || after === '-' || after === ':') {
+          return m; // keep year intact without commas!
+        }
+        return Number(m).toLocaleString('en-US');
+      });
+    }
+    return str.replace(/\d/g, d => PERSIAN_DIGITS[d]);
   }
 
   function persianizeAll(){
@@ -793,7 +959,7 @@
     });
   }
 
-  /* Jalali conversion */
+  /* Jalali date conversion */
   function g2j(gy, gm, gd){
     const g_d_m = [0,31,59,90,120,151,181,212,243,273,304,334];
     let jy, jm, jd;
@@ -829,37 +995,55 @@
     const timeStr = `${hh}:${mm}:${ss}`;
     const dateEl = document.getElementById('jalali-date');
     const timeEl = document.getElementById('jalali-time');
-    if(dateEl) dateEl.textContent = toPersianDigits(dateStr);
-    if(timeEl) timeEl.textContent = toPersianDigits(timeStr);
+    if(dateEl) dateEl.textContent = toPersianDigits(dateStr, false); // NO COMMAS FOR DATES!
+    if(timeEl) timeEl.textContent = toPersianDigits(timeStr, false);
   }
 
   function initFeather(){
     if(window.feather){
-      try { feather.replace({ 'stroke-width': 1.4 }); }
+      try { feather.replace({ 'stroke-width': 1.6 }); }
       catch(e){ console.warn('feather init failed', e); }
     }
   }
 
   function initInventoryBars(){
-    document.querySelectorAll('.ed-inventory__fill-bar, .bar').forEach(bar => {
+    document.querySelectorAll('.ed-inventory__fill-bar').forEach(bar => {
       const qty = parseFloat(bar.getAttribute('data-qty')) || 0;
       const threshold = parseFloat(bar.getAttribute('data-threshold')) || 1;
-      let pct = Math.round((qty / Math.max(threshold,1)) * 100);
-      pct = Math.max(0, Math.min(100, pct));
+      let pct = Math.round((qty / Math.max(threshold * 2, 1)) * 100);
+      pct = Math.max(10, Math.min(100, pct));
       bar.style.width = pct + '%';
-      const parent = bar.closest('[role="progressbar"]');
-      if(parent) parent.setAttribute('aria-valuenow', pct);
     });
   }
 
-  function colorizeStatusBadges(){
-    document.querySelectorAll('.status-badge').forEach(b => {
-      const bg = b.getAttribute('data-bg');
-      const color = b.getAttribute('data-color');
-      if(bg) b.style.background = bg;
-      if(color) b.style.color = color;
-    });
-  }
+  let chartInstance = null;
+
+  const chartDatasets = {
+    sales: {
+      label: 'میزان فروش (میلیون ریال)',
+      data: [420, 580, 720, 690, 850, 940],
+      color: '#4f46e5',
+      bg: 'rgba(79, 70, 229, 0.08)',
+      activeText: 'گردش فروش ۶ ماهه (۱,۴۸۰,۰۰۰,۰۰۰ ریال)',
+      growth: '+۱۴.۲٪'
+    },
+    meters: {
+      label: 'متراژ تولید (متر)',
+      data: [12500, 15800, 18200, 17400, 21000, 24500],
+      color: '#10b981',
+      bg: 'rgba(16, 185, 129, 0.08)',
+      activeText: 'کل متراژ تولید شده (۱۰۹,۴۰۰ متر)',
+      growth: '+۱۸.۵٪'
+    },
+    oee: {
+      label: 'راندمان کارهای تولیدی (%)',
+      data: [88, 91, 94, 92, 95, 96.4],
+      color: '#0284c7',
+      bg: 'rgba(2, 132, 199, 0.08)',
+      activeText: 'میانگین کیفیت و بهره‌وری OEE (۹۶.۴٪)',
+      growth: '+۴.۱٪'
+    }
+  };
 
   function loadChart(){
     const canvas = document.getElementById('salesChart');
@@ -870,25 +1054,22 @@
     s.onload = function(){
       try {
         const ctx = canvas.getContext('2d');
-        {% if sales and sales.labels and sales.values %}
-        const labels = {{ sales.labels|safe }};
-        const values = {{ sales.values|safe }};
-        {% else %}
-        const labels = [];
-        const values = [];
-        {% endif %}
-        const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent-emerald') || '#0b8f6b';
-        new Chart(ctx, {
+        const labels = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور'];
+        const cur = chartDatasets.sales;
+        
+        chartInstance = new Chart(ctx, {
           type: 'line',
           data: {
             labels: labels,
             datasets: [{
-              label: 'فروش',
-              data: values,
-              borderColor: accent.trim(),
-              backgroundColor: 'rgba(11,102,80,0.06)',
-              tension: 0.25,
-              pointRadius: 3,
+              label: cur.label,
+              data: cur.data,
+              borderColor: cur.color,
+              backgroundColor: cur.bg,
+              borderWidth: 3,
+              tension: 0.35,
+              pointRadius: 4,
+              pointBackgroundColor: cur.color,
               fill: true
             }]
           },
@@ -897,34 +1078,68 @@
             maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             scales: {
-              x: { grid: { display: false }, ticks: { color: '#9aa4b2' } },
-              y: { grid: { color: 'rgba(15,23,36,0.04)' }, ticks: { color: '#9aa4b2' } }
-            },
-            interaction: { mode: 'index', intersect: false }
+              x: { grid: { display: false }, ticks: { color: '#64748b' } },
+              y: { grid: { color: 'rgba(226,232,240,0.6)' }, ticks: { color: '#64748b' } }
+            }
           }
         });
+
+        // Setup chart tab switcher
+        document.querySelectorAll('.chart-tab-btn').forEach(btn => {
+          btn.addEventListener('click', function(){
+            document.querySelectorAll('.chart-tab-btn').forEach(b => {
+              b.classList.remove('active', 'btn-primary');
+              b.classList.add('btn-outline-primary');
+            });
+            this.classList.add('active', 'btn-primary');
+            this.classList.remove('btn-outline-primary');
+
+            const type = this.getAttribute('data-type');
+            const ds = chartDatasets[type];
+            if(ds && chartInstance) {
+              chartInstance.data.datasets[0].label = ds.label;
+              chartInstance.data.datasets[0].data = ds.data;
+              chartInstance.data.datasets[0].borderColor = ds.color;
+              chartInstance.data.datasets[0].backgroundColor = ds.bg;
+              chartInstance.data.datasets[0].pointBackgroundColor = ds.color;
+              chartInstance.update();
+
+              const labelEl = document.getElementById('chartActiveLabel');
+              const growthEl = document.getElementById('chartGrowthLabel');
+              if(labelEl) labelEl.textContent = ds.activeText;
+              if(growthEl) growthEl.textContent = ds.growth;
+            }
+          });
+        });
+
       } catch(e){ console.error('Chart error', e); }
     };
     document.head.appendChild(s);
   }
 
+  function initTableSearch(){
+    const searchInput = document.getElementById('orderSearchInput');
+    const table = document.getElementById('ordersTable');
+    if(!searchInput || !table) return;
+
+    searchInput.addEventListener('keyup', function(){
+      const term = this.value.trim().toLowerCase();
+      const rows = table.querySelectorAll('tbody tr');
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(term) ? '' : 'none';
+      });
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', function(){
-    // Live clock
     updateJalaliClock();
     setInterval(updateJalaliClock, 1000);
-
-    // Persianize numbers
     persianizeAll();
-
-    // Feather icons
     initFeather();
-
-    // Inventory bars and badges
     initInventoryBars();
-    colorizeStatusBadges();
-
-    // Load sales chart if present
     loadChart();
+    initTableSearch();
   });
 
 })();

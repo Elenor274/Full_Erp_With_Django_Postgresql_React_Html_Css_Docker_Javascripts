@@ -43,17 +43,28 @@ class Product(models.Model):
         return f"{self.code} - {self.name}"
 
     @property
-    def real_stock(self):
-        from warehouse.models import StockItem
-        total = StockItem.objects.filter(product=self).aggregate(
+    def total_stock_in(self):
+        from warehouse.models import StockTransaction
+        total = StockTransaction.objects.filter(product=self, type="IN").aggregate(
             models.Sum("quantity")
-        )["quantity__sum"]
-        return total or 0
+        )["quantity__sum"] or 0
+        return float(self.initial_stock) + float(total)
 
     @property
     def total_stock_out(self):
         from warehouse.models import StockTransaction
         total = StockTransaction.objects.filter(product=self, type="OUT").aggregate(
             models.Sum("quantity")
-        )["quantity__sum"]
-        return total or 0
+        )["quantity__sum"] or 0
+        return float(total)
+
+    @property
+    def stock_balance(self):
+        """
+        مانده موجودی = (موجودی اولیه + مجموع ورودی‌های انبار/تولید) - (مجموع خروجی‌های انبار/مصرف تولید)
+        """
+        return self.total_stock_in - self.total_stock_out
+
+    @property
+    def real_stock(self):
+        return self.stock_balance

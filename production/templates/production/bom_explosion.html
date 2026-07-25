@@ -1,0 +1,190 @@
+{% extends "core/base.html" %}
+{% load humanize %}
+
+{% block title %}انفجار مواد اولیه (BOM Explosion / MRP) - حاما پارچه{% endblock %}
+{% block page_title %}سیستم انفجار مواد اولیه و محاسبه نیازسنجی انبار (MRP){% endblock %}
+
+{% block content %}
+<div class="fade-in-up">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h4 class="fw-bold mb-1 text-gray-900">انفجار مواد اولیه و محاسبه کسری انبار (Material Requirement Planning)</h4>
+            <p class="text-muted text-xs mb-0">محاسبه هوشمند میزان مواد اولیه مورد نیاز بر اساس درخت BOM، ضریب پرتی و موجودی واقعی انبار</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% url 'production:bom_list' %}" class="btn btn-outline-soft">
+                <i data-feather="git-merge"></i>
+                <span>مدیریت درخت BOM</span>
+            </a>
+            <button onclick="window.print();" class="btn btn-outline-soft">
+                <i data-feather="printer"></i>
+                <span>چاپ گزارش MRP</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Parameter Selection Form -->
+    <div class="card-custom mb-4">
+        <h6 class="fw-bold mb-3 text-primary border-bottom pb-2">
+            <i data-feather="sliders" class="me-2"></i>
+            تنظیم پارامترهای انفجار مواد
+        </h6>
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label-custom fw-bold">بر اساس سفارش مشتری</label>
+                <select name="order_id" class="form-control-custom" onchange="this.form.product_id.value=''; this.form.submit();">
+                    <option value="">-- انتخاب سفارش جهت محاسبه --</option>
+                    {% for ord in orders %}
+                    <option value="{{ ord.id }}" {% if selected_order and selected_order.id == ord.id %}selected{% endif %}>
+                        {{ ord.order_number }} - {{ ord.customer.name }} ({% if ord.items.exists %}{{ ord.items.first.product.name }}{% endif %})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label-custom fw-bold">یا انتخاب مستقیم محصول</label>
+                <select name="product_id" class="form-control-custom" onchange="this.form.order_id.value=''; this.form.submit();">
+                    <option value="">-- انتخاب کالا / محصول اصلی --</option>
+                    {% for p in products %}
+                    <option value="{{ p.id }}" {% if selected_product and selected_product.id == p.id %}selected{% endif %}>
+                        {{ p.name }} (کد: {{ p.code }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label-custom fw-bold">تیراژ تولید هدف</label>
+                <input type="number" name="quantity" value="{{ batch_quantity|floatformat:0 }}" class="form-control-custom font-mono fw-bold" min="1" step="1">
+            </div>
+
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary-custom w-100">
+                    <i data-feather="cpu"></i>
+                    <span>محاسبه انفجار</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {% if selected_product %}
+        {% if not has_bom %}
+        <div class="alert alert-warning border-warning d-flex align-items-center gap-3">
+            <i data-feather="alert-triangle" style="width:28px;height:28px;"></i>
+            <div>
+                <h6 class="fw-bold mb-1">ساختار BOM برای محصول انتخاب شده تعریف نشده است!</h6>
+                <span class="text-xs">جهت انجام محاسبات انفجار مواد اولیه، ابتدا باید فرمول BOM این محصول را تعریف کنید.</span>
+                <a href="{% url 'production:bom_create' %}" class="btn btn-sm btn-warning ms-3">تعریف فرمول BOM جدید</a>
+            </div>
+        </div>
+        {% else %}
+        <!-- Target Info Box -->
+        <div class="card-custom bg-light mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="p-3 bg-white rounded-3 border text-primary">
+                            <i data-feather="box" style="width:32px;height:32px;"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs text-muted d-block">محصول مبنای انفجار مواد</span>
+                            <h4 class="fw-bold mb-1 text-dark">{{ selected_product.name }}</h4>
+                            <span class="font-mono text-xs text-muted">کد: {{ selected_product.code }} | واحد: {{ selected_product.unit }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-md-end border-start-md">
+                    <span class="text-xs text-muted d-block">تیراژ برنامه تولید</span>
+                    <span class="font-mono fs-3 fw-bold text-primary">{{ batch_quantity|intcomma }}</span>
+                    <span class="text-xs text-muted ms-1">{{ selected_product.unit }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Explosion Results Table -->
+        <div class="card-custom p-0 overflow-hidden mb-4">
+            <div class="p-3 bg-white border-bottom d-flex align-items-center justify-content-between">
+                <h6 class="fw-bold mb-0 text-dark">
+                    <i data-feather="list" class="me-2 text-primary"></i>
+                    نتایج انفجار مواد اولیه و نیازمندی‌های تامین
+                </h6>
+                <span class="badge bg-light text-dark border font-mono">تعداد اجزا: {{ explosion_results|length }} قلم</span>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">ماده اولیه / قطعه</th>
+                            <th>مرحله مصرف</th>
+                            <th class="text-center">ضریب واحد BOM</th>
+                            <th class="text-center">نیاز خالص (Net)</th>
+                            <th class="text-center">ضریب پرتی</th>
+                            <th class="text-center">نیاز ناخالص (Gross)</th>
+                            <th class="text-center">موجودی فعلی انبار</th>
+                            <th class="text-center">وضعیت تامین / کسری</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in explosion_results %}
+                        <tr class="{% if row.is_deficient %}table-danger-subtle{% endif %}">
+                            <td class="ps-4">
+                                <div class="fw-bold text-dark text-xs">{{ row.component.name }}</div>
+                                <span class="font-mono text-xxs text-muted">{{ row.component.code }}</span>
+                            </td>
+                            <td class="text-xs">
+                                {% if row.stage %}
+                                <span class="badge bg-white text-dark border">{{ row.stage.name }}</span>
+                                {% else %}
+                                <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center font-mono text-xs">{{ row.unit_usage }} {{ row.unit }}</td>
+                            <td class="text-center font-mono text-xs fw-bold">{{ row.net_required|intcomma }} {{ row.unit }}</td>
+                            <td class="text-center font-mono text-xs">
+                                {% if row.scrap_percentage > 0 %}
+                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle">
+                                    {{ row.scrap_percentage }}%
+                                </span>
+                                {% else %}
+                                <span class="text-muted">0%</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center font-mono text-xs fw-bold text-primary">
+                                {{ row.gross_required|intcomma }} {{ row.unit }}
+                            </td>
+                            <td class="text-center font-mono text-xs fw-bold">
+                                {{ row.current_stock|intcomma }} {{ row.unit }}
+                            </td>
+                            <td class="text-center text-xs">
+                                {% if row.is_deficient %}
+                                <div class="d-inline-flex align-items-center gap-1 text-danger fw-bold bg-danger-subtle px-2 py-1 rounded border border-danger-subtle">
+                                    <i data-feather="alert-circle" style="width:14px;height:14px;"></i>
+                                    <span>کسری: {{ row.shortage|intcomma }} {{ row.unit }}</span>
+                                </div>
+                                {% else %}
+                                <div class="d-inline-flex align-items-center gap-1 text-success fw-bold bg-success-subtle px-2 py-1 rounded border border-success-subtle">
+                                    <i data-feather="check-circle" style="width:14px;height:14px;"></i>
+                                    <span>موجودی کافی است</span>
+                                </div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    {% else %}
+    <!-- Placeholder when no product selected -->
+    <div class="card-custom text-center py-5">
+        <i data-feather="layers" style="width:56px;height:56px;opacity:0.25;" class="mb-3 text-primary"></i>
+        <h5 class="fw-bold text-dark mb-2">محصول یا سفارش مورد نظر را جهت انفجار مواد انتخاب کنید.</h5>
+        <p class="text-xs text-muted mb-0">از فرم بالای صفحه، یک سفارش یا محصول را انتخاب کرده و تیراژ تولید را تعیین نمایید تا محاسبات MRP انجام گردد.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -29,5 +29,6 @@ urlpatterns = [
     path('users/', include(('users.urls', 'users'), namespace='users')),
 ]
 
-# سرو کردن فایل‌های static در حالت توسعه
+# سرو کردن فایل‌های static و media در حالت توسعه و سرور
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

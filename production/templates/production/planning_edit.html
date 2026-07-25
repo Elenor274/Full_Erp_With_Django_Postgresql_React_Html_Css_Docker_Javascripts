@@ -125,15 +125,14 @@
       <!-- بازه زمانی شروع و پایان -->
       <div class="col-md-6">
         <label for="{{ form.start_date.id_for_label }}" class="form-label font-sans font-medium text-xs text-gray-500">{{ form.start_date.label }}</label>
-        <!-- به صورت پیش‌فرض فیلدهای نوع تاریخ در قالب‌های ویرایش باید با کلاس‌ها تنظیم شوند -->
-        <input type="date" name="start_date" id="id_start_date" value="{{ plan.start_date|date:'Y-m-d' }}" class="form-control-custom">
+        {{ form.start_date }}
         {% if form.start_date.errors %}
           <div class="text-danger text-xs mt-1">{{ form.start_date.errors.0 }}</div>
         {% endif %}
       </div>
       <div class="col-md-6">
         <label for="{{ form.end_date.id_for_label }}" class="form-label font-sans font-medium text-xs text-gray-500">{{ form.end_date.label }}</label>
-        <input type="date" name="end_date" id="id_end_date" value="{{ plan.end_date|date:'Y-m-d' }}" class="form-control-custom">
+        {{ form.end_date }}
         {% if form.end_date.errors %}
           <div class="text-danger text-xs mt-1">{{ form.end_date.errors.0 }}</div>
         {% endif %}

@@ -7,6 +7,8 @@ from django.contrib.auth.decorators import login_required
 from .forms import ProductForm, ProductGroupForm
 from .models import Product, ProductGroup
 from warehouse.models import StockItem, StockTransaction
+from orders.models import OrderItem, Order
+from production.models import Planning, QualityControl
 
 
 # -----------------------------
@@ -71,7 +73,23 @@ def product_list(request):
 
 
 # -----------------------------
-# جزئیات کالا
+# ردیابی و رهگیری بر اساس کد کالا
+# -----------------------------
+@login_required
+def product_trace(request):
+    code = request.GET.get("code", "").strip() or request.GET.get("q", "").strip()
+    if not code:
+        return redirect("products:product_list")
+    
+    product = Product.objects.filter(Q(code__iexact=code) | Q(code__icontains=code) | Q(name__icontains=code)).first()
+    if product:
+        return redirect("products:product_detail", pk=product.pk)
+    else:
+        return redirect(f"/products/?q={code}")
+
+
+# -----------------------------
+# جزئیات و رهگیری کامل کالا (360 درجه)
 # -----------------------------
 @login_required
 def product_detail(request, pk):
@@ -79,16 +97,28 @@ def product_detail(request, pk):
 
     stock_items = StockItem.objects.filter(product=product).select_related('warehouse')
     transactions = StockTransaction.objects.filter(product=product).select_related(
-        'warehouse'
-    ).order_by('-created_at')[:20]
+        'warehouse', 'user'
+    ).order_by('-created_at')[:30]
 
-    total_stock = sum(item.quantity for item in stock_items)
+    order_items = OrderItem.objects.filter(
+        product=product
+    ).select_related('order', 'order__customer').order_by('-order__created_at')
+
+    plannings = Planning.objects.filter(
+        Q(product=product) | Q(raw_material=product)
+    ).select_related('order', 'machine', 'operator', 'stage', 'warehouse').order_by('-created_at')
+
+    qc_records = QualityControl.objects.filter(
+        product=product
+    ).select_related('inspector', 'warehouse', 'order').order_by('-inspection_date')
 
     return render(request, "products/product_detail.html", {
         'product': product,
         'stock_items': stock_items,
         'transactions': transactions,
-        'total_stock': total_stock,
+        'order_items': order_items,
+        'plannings': plannings,
+        'qc_records': qc_records,
     })
 
 

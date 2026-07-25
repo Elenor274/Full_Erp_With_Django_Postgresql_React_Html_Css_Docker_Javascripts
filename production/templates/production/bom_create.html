@@ -1,0 +1,161 @@
+{% extends "core/base.html" %}
+
+{% block title %}تعریف ساختار درخت BOM جدید - حاما پارچه{% endblock %}
+{% block page_title %}تعریف ساختار درخت محصول جدید (BOM){% endblock %}
+
+{% block content %}
+<div class="fade-in-up">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <a href="{% url 'production:bom_list' %}" class="btn btn-sm btn-outline-soft mb-2">
+                <i data-feather="arrow-right"></i>
+                <span>بازگشت به لیست BOM</span>
+            </a>
+            <h4 class="fw-bold mb-0 text-gray-900">تعریف ساختار درخت محصول و مواد اولیه</h4>
+        </div>
+    </div>
+
+    <form method="post" id="bomForm">
+        {% csrf_token %}
+        <div class="card-custom mb-4">
+            <h6 class="fw-bold mb-3 text-primary border-bottom pb-2">اطلاعات اصلی فرمول BOM</h6>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label-custom fw-bold">کد ساختار BOM</label>
+                    {{ form.bom_code }}
+                    <span class="form-text text-xxs">در صورت خالی گذاشتن، توسط سیستم صادر می‌شود.</span>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label-custom fw-bold">محصول اصلی (پایه) <span class="text-danger">*</span></label>
+                    {{ form.product }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label-custom fw-bold">عنوان فرمول ساخت <span class="text-danger">*</span></label>
+                    {{ form.title }}
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label-custom">توضیحات و ملاحظات فنی</label>
+                    {{ form.description }}
+                </div>
+                <div class="col-md-12">
+                    <div class="form-check">
+                        {{ form.is_active }}
+                        <label class="form-check-label text-xs fw-bold ms-1" for="{{ form.is_active.id_for_label }}">
+                            این فرمول به عنوان نسخه اصلی و فعال این محصول در برنامه‌ریزی تولید شناخته شود.
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOM Items Dynamic Table -->
+        <div class="card-custom p-0 overflow-hidden mb-4">
+            <div class="p-3 bg-light border-bottom d-flex align-items-center justify-content-between">
+                <h6 class="fw-bold mb-0 text-dark">
+                    <i data-feather="layers" class="me-2 text-primary"></i>
+                    اجزا و مواد اولیه تشکیل‌دهنده (به ازای ۱ واحد محصول اصلی)
+                </h6>
+                <button type="button" class="btn btn-sm btn-primary-custom" id="addRowBtn">
+                    <i data-feather="plus"></i>
+                    <span>افزودن قلم ماده جدید</span>
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle mb-0" id="bomItemsTable">
+                    <thead class="bg-white">
+                        <tr>
+                            <th style="width: 30%;">ماده اولیه / قطعه مصرفی <span class="text-danger">*</span></th>
+                            <th style="width: 18%;">مرحله کاری مصرف</th>
+                            <th style="width: 18%;">مقدار مصرف استاندارد <span class="text-danger">*</span></th>
+                            <th style="width: 14%;">درصد پرتی (%)</th>
+                            <th style="width: 15%;">توضیحات / ملاحظات</th>
+                            <th style="width: 5%;" class="text-center">حذف</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="item-row">
+                            <td>
+                                <select name="component[]" class="form-control-custom select-component" required>
+                                    <option value="">-- انتخاب ماده اولیه --</option>
+                                    {% for p in products %}
+                                    <option value="{{ p.id }}">{{ p.name }} (کد: {{ p.code }}) - {{ p.unit }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                                <select name="stage[]" class="form-control-custom">
+                                    <option value="">-- انتخاب مرحله --</option>
+                                    {% for stg in stages %}
+                                    <option value="{{ stg.id }}">{{ stg.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                                <input type="number" step="0.0001" name="quantity[]" class="form-control-custom font-mono" placeholder="0.0000" required>
+                            </td>
+                            <td>
+                                <input type="number" step="0.1" name="scrap_percentage[]" class="form-control-custom font-mono" value="0.0" placeholder="0.0">
+                            </td>
+                            <td>
+                                <input type="text" name="notes[]" class="form-control-custom" placeholder="ملاحظات...">
+                            </td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-sm btn-outline-danger remove-row-btn p-1">
+                                    <i data-feather="x" style="width:14px;height:14px;"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mb-5">
+            <a href="{% url 'production:bom_list' %}" class="btn btn-outline-soft">انصراف</a>
+            <button type="submit" class="btn-primary-custom px-4">
+                <i data-feather="check"></i>
+                <span>ذخیره و ایجاد درخت BOM</span>
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tableBody = document.querySelector('#bomItemsTable tbody');
+    const addBtn = document.getElementById('addRowBtn');
+
+    addBtn.addEventListener('click', function() {
+        const firstRow = tableBody.querySelector('.item-row');
+        const newRow = firstRow.cloneNode(true);
+        
+        // Reset values
+        newRow.querySelectorAll('input').forEach(input => {
+            if(input.name === 'scrap_percentage[]') {
+                input.value = '0.0';
+            } else {
+                input.value = '';
+            }
+        });
+        newRow.querySelectorAll('select').forEach(select => {
+            select.selectedIndex = 0;
+        });
+
+        tableBody.appendChild(newRow);
+        feather.replace();
+    });
+
+    tableBody.addEventListener('click', function(e) {
+        if (e.target.closest('.remove-row-btn')) {
+            const rows = tableBody.querySelectorAll('.item-row');
+            if (rows.length > 1) {
+                e.target.closest('.item-row').remove();
+            } else {
+                alert('حداقل یک قلم ماده اولیه باید در درخت ساختار BOM وجود داشته باشد.');
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

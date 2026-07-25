@@ -41,9 +41,9 @@ export default function Orders({
     product_id: string;
     quantity: number;
     weight: number;
-    length: number;
-    width: number;
-  }>>([{ product_id: "", quantity: 1, weight: 0, length: 0, width: 0 }]);
+    model_name: string;
+    color: string;
+  }>>([{ product_id: "", quantity: 1, weight: 0, model_name: "", color: "" }]);
 
   // Detail view state
   const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -71,7 +71,7 @@ export default function Orders({
       status: "registered",
       description: "",
     });
-    setOrderItemsData([{ product_id: products[0]?.id || "", quantity: 1, weight: 1, length: 50, width: 1.5 }]);
+    setOrderItemsData([{ product_id: products[0]?.id || "", quantity: 1, weight: 1, model_name: "", color: "" }]);
     setEditingOrder(null);
     setIsFormOpen(true);
   };
@@ -80,7 +80,7 @@ export default function Orders({
   const addItemRow = () => {
     setOrderItemsData([
       ...orderItemsData,
-      { product_id: products[0]?.id || "", quantity: 1, weight: 1, length: 50, width: 1.5 }
+      { product_id: products[0]?.id || "", quantity: 1, weight: 1, model_name: "", color: "" }
     ]);
   };
 
@@ -125,8 +125,8 @@ export default function Orders({
       product_id: item.product_id,
       quantity: Number(item.quantity),
       weight: Number(item.weight),
-      length: Number(item.length),
-      width: Number(item.width)
+      model_name: item.model_name,
+      color: item.color
     }));
 
     if (editingOrder) {
@@ -414,8 +414,8 @@ export default function Orders({
                         </div>
                         <div className="grid grid-cols-3 gap-1.5 text-[10px] text-slate-400 font-medium">
                           <span>وزن: {item.weight}kg</span>
-                          <span>طول: {item.length}cm</span>
-                          <span>عرض: {item.width}cm</span>
+                          <span>مدل: {item.model_name || "—"}</span>
+                          <span>رنگ: {item.color || "—"}</span>
                         </div>
                         {prod && (
                           <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 pt-1 border-t border-slate-50">
@@ -580,29 +580,25 @@ export default function Orders({
                           />
                         </div>
 
-                        <div className="md:col-span-1.5">
-                          <label className="block text-slate-400 mb-1 text-[10px] font-bold">طول (CM)</label>
+                        <div className="md:col-span-2">
+                          <label className="block text-slate-400 mb-1 text-[10px] font-bold">مدل</label>
                           <input
-                            type="number"
-                            required
-                            step="0.1"
-                            min={0}
-                            value={item.length}
-                            onChange={(e) => handleItemRowChange(idx, "length", parseFloat(e.target.value) || 0)}
-                            className="w-full px-2 py-1.5 border border-slate-100 rounded-lg focus:outline-none text-[11px] font-mono"
+                            type="text"
+                            placeholder="مثال: M-101"
+                            value={item.model_name}
+                            onChange={(e) => handleItemRowChange(idx, "model_name", e.target.value)}
+                            className="w-full px-2 py-1.5 border border-slate-100 rounded-lg focus:outline-none text-[11px]"
                           />
                         </div>
 
-                        <div className="md:col-span-1.5">
-                          <label className="block text-slate-400 mb-1 text-[10px] font-bold">عرض (CM)</label>
+                        <div className="md:col-span-2">
+                          <label className="block text-slate-400 mb-1 text-[10px] font-bold">رنگ</label>
                           <input
-                            type="number"
-                            required
-                            step="0.01"
-                            min={0}
-                            value={item.width}
-                            onChange={(e) => handleItemRowChange(idx, "width", parseFloat(e.target.value) || 0)}
-                            className="w-full px-2 py-1.5 border border-slate-100 rounded-lg focus:outline-none text-[11px] font-mono"
+                            type="text"
+                            placeholder="مثال: سرمه‌ای"
+                            value={item.color}
+                            onChange={(e) => handleItemRowChange(idx, "color", e.target.value)}
+                            className="w-full px-2 py-1.5 border border-slate-100 rounded-lg focus:outline-none text-[11px]"
                           />
                         </div>
 

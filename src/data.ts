@@ -44,7 +44,7 @@ export const DEFAULT_ORDERS: Order[] = [
     description: "تحویل فوری برای مزون رضایی",
     created_at: "2026-07-16T10:30:00Z",
     items: [
-      { id: "oi1", order_id: "o1", product_id: "p1", quantity: 10, weight: 5, length: 100, width: 1.5 }
+      { id: "oi1", order_id: "o1", product_id: "p1", quantity: 10, weight: 5, model_name: "مدل اسلیمی", color: "سرمه‌ای" }
     ]
   },
   {
@@ -55,7 +55,7 @@ export const DEFAULT_ORDERS: Order[] = [
     description: "سفارش عمده مانتو مدارس",
     created_at: "2026-07-17T14:15:00Z",
     items: [
-      { id: "oi2", order_id: "o2", product_id: "p2", quantity: 15, weight: 30, length: 50, width: 1.6 }
+      { id: "oi2", order_id: "o2", product_id: "p2", quantity: 15, weight: 30, model_name: "طرح کلاسیک M2", color: "مشکی" }
     ]
   },
   {
@@ -66,7 +66,7 @@ export const DEFAULT_ORDERS: Order[] = [
     description: "تسویه کامل نقدی",
     created_at: "2026-07-18T09:00:00Z",
     items: [
-      { id: "oi3", order_id: "o3", product_id: "p3", quantity: 5, weight: 10, length: 25, width: 1.4 }
+      { id: "oi3", order_id: "o3", product_id: "p3", quantity: 5, weight: 10, model_name: "مدل چهارخانه P3", color: "طوسی" }
     ]
   }
 ];

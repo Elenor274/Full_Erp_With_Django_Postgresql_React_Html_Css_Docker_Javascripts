@@ -23,11 +23,11 @@
     }
 
     @media (min-width: 768px) {
-        .item-col-product  { flex: 0 0 28%; max-width: 28%; }
+        .item-col-product  { flex: 0 0 26%; max-width: 26%; }
         .item-col-quantity { flex: 0 0 12%; max-width: 12%; }
         .item-col-weight   { flex: 0 0 12%; max-width: 12%; }
-        .item-col-length   { flex: 0 0 12%; max-width: 12%; }
-        .item-col-width    { flex: 0 0 12%; max-width: 12%; }
+        .item-col-model    { flex: 0 0 22%; max-width: 22%; }
+        .item-col-color    { flex: 0 0 22%; max-width: 22%; }
     }
 
     .item-box {
@@ -42,7 +42,7 @@
 
     <h5 class="mb-4" style="font-weight:600;">ویرایش سفارش</h5>
 
-    <form method="post" novalidate>
+    <form method="post" enctype="multipart/form-data" novalidate>
         {% csrf_token %}
         {{ form.non_field_errors }}
 
@@ -50,22 +50,105 @@
             <div class="col-md-4 mb-3">
                 {{ form.order_code.label_tag }}
                 {{ form.order_code }}
+                {% if form.order_code.errors %}<div class="text-danger text-xs mt-1">{{ form.order_code.errors.0 }}</div>{% endif %}
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label class="form-label">کد سپیدار</label>
+                {{ form.sepidar_code }}
             </div>
 
             <div class="col-md-4 mb-3">
                 {{ form.customer.label_tag }}
                 {{ form.customer }}
-            </div>
-
-            <div class="col-md-4 mb-3">
-                {{ form.status.label_tag }}
-                {{ form.status }}
+                {% if form.customer.errors %}<div class="text-danger text-xs mt-1">{{ form.customer.errors.0 }}</div>{% endif %}
             </div>
         </div>
 
-        <div class="mb-3">
-            {{ form.description.label_tag }}
-            {{ form.description }}
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold">تاریخ سفارش‌گذاری <span class="text-danger">*</span></label>
+                {{ form.order_date }}
+                {% if form.order_date.errors %}<div class="text-danger text-xs mt-1">{{ form.order_date.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold">تاریخ ارسال سفارش</label>
+                {{ form.delivery_date }}
+                {% if form.delivery_date.errors %}<div class="text-danger text-xs mt-1">{{ form.delivery_date.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-4 mb-3">
+                {{ form.description.label_tag }}
+                {{ form.description }}
+            </div>
+        </div>
+
+        <div class="alert alert-info py-2 px-3 mb-4 rounded-3 d-flex align-items-center gap-2 text-xs" style="background-color: rgba(2, 132, 199, 0.08); border: 1px solid rgba(2, 132, 199, 0.2); color: #0369a1;">
+            <i data-feather="info" style="width:16px;height:16px;"></i>
+            <span><strong>راهنمای مراحل کاری:</strong> مراحل کاری این سفارش (بافندگی، رنگرزی، تکمیل، کنترل کیفیت و...) در بخش <strong>برنامه‌ریزی تولید</strong> زمان‌بندی و مدیریت می‌شود.</span>
+        </div>
+
+        <!-- نقشه‌های واحد طراحی این سفارش -->
+        <div class="mb-4 p-3.5 border rounded-3 bg-slate-50" style="background-color: #f8fafc; border: 1px solid #e2e8f0;">
+            <h6 class="mb-3 fw-bold text-dark d-flex align-items-center gap-2" style="font-size: 0.9rem;">
+                <i data-feather="folder" class="text-primary" style="width:16px;height:16px;"></i>
+                نقشه‌ها و فایل‌های واحد طراحی ثبت‌شده
+            </h6>
+
+            {% if design_files %}
+                <div class="table-responsive mb-3">
+                    <table class="table table-sm table-bordered bg-white align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>نوع</th>
+                                <th>نام و عنوان نقشه</th>
+                                <th>حجم</th>
+                                <th>تاریخ بارگذاری</th>
+                                <th>عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for df in design_files %}
+                            <tr>
+                                <td>
+                                    <span class="badge {{ df.file_type_info.badge }} p-1 px-2">
+                                        <i data-feather="{{ df.file_type_info.icon }}" style="width:12px;height:12px;"></i>
+                                        {{ df.file_type_info.label }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ df.file.url }}" target="_blank" class="fw-bold text-decoration-none text-dark">
+                                        {{ df.title|default:df.file_name }}
+                                    </a>
+                                    <div class="text-muted small" dir="ltr" style="font-size: 0.75rem;">{{ df.file_name }}</div>
+                                </td>
+                                <td>{{ df.file_size_display }}</td>
+                                <td>{{ df.uploaded_at|date:"Y/m/d H:i" }}</td>
+                                <td>
+                                    <a href="{{ df.file.url }}" download class="btn btn-sm btn-outline-primary py-0 px-2">
+                                        <i data-feather="download" style="width:12px;height:12px;"></i>
+                                        دانلود
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-secondary py-2 small mb-3">هیچ فایل نقشه طراحی تا کنون ثبت نشده است.</div>
+            {% endif %}
+
+            <div class="border-top pt-3">
+                <label class="form-label small fw-semibold">افزودن نقشه‌(های) جدید واحد طراحی:</label>
+                <div class="row g-2 align-items-center">
+                    <div class="col-md-7">
+                        <input type="file" name="design_files" multiple class="form-control form-control-sm" accept=".psd,.dwg,.dxf,.catpart,.catproduct,.catdrawing,.sldprt,.sldasm,.slddrw,.step,.stp,.igs,.iges,.pdf,.png,.jpg,.jpeg,.zip,.rar" />
+                    </div>
+                    <div class="col-md-5">
+                        <input type="text" name="design_titles" class="form-control form-control-sm" placeholder="توضیحات نقشه جدید (اختیاری)" />
+                    </div>
+                </div>
+            </div>
         </div>
 
         <hr class="my-4">
@@ -98,14 +181,14 @@
                     {{ item_form.weight }}
                 </div>
 
-                <div class="field-wrapper item-col-length">
-                    {{ item_form.length.label_tag }}
-                    {{ item_form.length }}
+                <div class="field-wrapper item-col-model">
+                    {{ item_form.model_name.label_tag }}
+                    {{ item_form.model_name }}
                 </div>
 
-                <div class="field-wrapper item-col-width">
-                    {{ item_form.width.label_tag }}
-                    {{ item_form.width }}
+                <div class="field-wrapper item-col-color">
+                    {{ item_form.color.label_tag }}
+                    {{ item_form.color }}
                 </div>
 
             </div>

@@ -6,13 +6,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{% block title %}حاما پارچه{% endblock %}</title>
 
-  <!-- Core CSS -->
-  <link rel="stylesheet" href="{% static 'css/main.css' %}" />
-
-  <!-- Third-party -->
+  <!-- Third-party CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/feather-icons"></script>
+
+  <!-- Core App Stylesheet -->
+  <link rel="stylesheet" href="{% static 'css/main.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/jalali-datepicker.css' %}" />
 
   {% block head_extra %}{% endblock %}
   {% block head %}{% endblock %}
@@ -415,6 +416,23 @@
         </a>
 
         {% url 'production:maintenance_list' as url_maintenance %}
+        {% url 'production:bom_list' as url_bom %}
+        {% url 'production:bom_explosion' as url_explosion %}
+        {% url 'production:qc_list' as url_qc %}
+
+        <div class="nav-section-title">مهندسی و درخت محصول</div>
+        <a href="{{ url_bom }}" class="nav-item-custom {% if 'production/bom' in request.path and 'explosion' not in request.path %}active{% endif %}" aria-label="درخت محصول BOM">
+          <i data-feather="git-merge"></i><span>ساختار درخت محصول (BOM)</span>
+        </a>
+        <a href="{{ url_explosion }}" class="nav-item-custom {% if 'production/bom/explosion' in request.path %}active{% endif %}" aria-label="انفجار مواد">
+          <i data-feather="layers"></i><span>انفجار مواد اولیه (MRP)</span>
+        </a>
+
+        <div class="nav-section-title">تضمین و کنترل کیفیت</div>
+        <a href="{{ url_qc }}" class="nav-item-custom {% if 'production/qc' in request.path %}active{% endif %}" aria-label="کنترل کیفیت QC">
+          <i data-feather="check-square"></i><span>کنترل کیفیت (QC)</span>
+        </a>
+
         <div class="nav-section-title">نگهداری و تعمیرات (نت)</div>
         <a href="{{ url_maintenance|default:'#' }}" class="nav-item-custom {% if 'production/maintenance' in request.path %}active{% endif %}" aria-label="مدیریت تعمیرات">
           <i data-feather="tool"></i><span>درخواست‌های تعمیر و نت</span>
@@ -460,8 +478,14 @@
       </div>
 
       <div class="d-flex align-items-center gap-2">
-        <form class="d-none d-lg-block" role="search" action="" method="get" aria-label="جستجو">
-          <input type="search" name="q" class="form-control form-control-sm search-input" placeholder="جستجو..." aria-label="جستجو">
+        <!-- هدر - سرچ‌بار بر اساس کد کالا (40501) -->
+        <form class="d-none d-lg-block" role="search" action="{% url 'products:product_trace' %}" method="get" aria-label="ردیابی کد کالا">
+          <div class="position-relative">
+            <input type="search" name="code" class="form-control form-control-sm search-input" placeholder="ردیابی با کد کالا (مثلاً 40501)..." style="width: 260px; padding-left: 30px; font-size: 0.8rem;" aria-label="جستجو">
+            <button type="submit" class="btn btn-link p-0 position-absolute text-muted" style="left: 10px; top: 50%; transform: translateY(-50%); text-decoration: none;">
+              <i data-feather="search" style="width: 14px; height: 14px;"></i>
+            </button>
+          </div>
         </form>
 
         <div class="dropdown">
@@ -649,8 +673,45 @@
                 input.setAttribute('autocomplete', 'off');
             }
         });
+
+        // Global Number Formatter for font-mono / format-num elements (skipping dates and codes)
+        document.querySelectorAll('.font-mono, .persian-num, .format-num').forEach(function(el) {
+            if (el.children.length === 0 && el.textContent) {
+                const text = el.textContent.trim();
+                // Do NOT touch dates (contains / or -) or times or non-digits
+                if (text.includes('/') || text.includes('-') || text.includes(':')) {
+                    return;
+                }
+                // If pure integer number larger than 999 without commas
+                if (/^\d{4,}$/.test(text)) {
+                    el.textContent = Number(text).toLocaleString('fa-IR');
+                }
+            }
+        });
+
+        // Initialize Feather Icons automatically across all views
+        if (window.feather) {
+            try {
+                feather.replace({ 'stroke-width': 1.6 });
+            } catch (e) {
+                console.warn('Feather replacement error:', e);
+            }
+        }
+
+        // Convert all input type="date" to text with .jalali-date-input for offline Jalali picker
+        document.querySelectorAll('input[type="date"]').forEach(function(input) {
+            input.type = 'text';
+            input.classList.add('jalali-date-input');
+        });
+
+        // Global Offline Jalali (Shamsi) DatePicker Initialization
+        if (typeof window.initJalaliDatePicker === 'function') {
+            window.initJalaliDatePicker();
+        }
     });
   </script>
+
+  <script src="{% static 'js/jalali-datepicker.js' %}"></script>
 
   {% block scripts %}{% endblock %}
 </body>

@@ -1,0 +1,108 @@
+{% extends "core/base.html" %}
+{% load humanize %}
+
+{% block title %}جزئیات برگه QC - {{ qc.qc_code }}{% endblock %}
+{% block page_title %}شناسنامه و نتایج برگه کنترل کیفیت{% endblock %}
+
+{% block content %}
+<div class="fade-in-up">
+    <!-- Top Bar -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2">
+                <a href="{% url 'production:qc_list' %}" class="btn btn-sm btn-outline-soft">
+                    <i data-feather="arrow-right"></i>
+                    <span>بازگشت به لیست QC</span>
+                </a>
+                <span class="badge bg-primary-subtle text-primary border font-mono fs-6">{{ qc.qc_code }}</span>
+            </div>
+            <h3 class="fw-bold text-gray-900 mt-2 mb-0">برگه بازرسی {{ qc.get_inspection_type_display }}</h3>
+        </div>
+        <div class="d-flex gap-2">
+            <button onclick="window.print();" class="btn btn-outline-soft">
+                <i data-feather="printer"></i>
+                <span>چاپ برگه QC</span>
+            </button>
+            <a href="{% url 'production:qc_edit' qc.pk %}" class="btn-primary-custom">
+                <i data-feather="edit-2"></i>
+                <span>ویرایش برگه</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Detail Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-8">
+            <div class="card-custom h-100">
+                <h6 class="fw-bold mb-3 text-primary border-bottom pb-2">اطلاعات کالا و بازرسی</h6>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <span class="text-xs text-muted d-block">کالا / محصول بازرسی شده</span>
+                        <span class="fw-bold text-dark fs-6">{{ qc.product.name }}</span>
+                        <span class="font-mono text-xs text-muted d-block">کد: {{ qc.product.code }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <span class="text-xs text-muted d-block">تاریخ و بازرس</span>
+                        <span class="font-mono fw-bold text-dark">{{ qc.inspection_date|date:"Y/m/d" }}</span>
+                        <span class="text-xs text-muted d-block">بازرس: {% if qc.inspector %}{{ qc.inspector.get_full_name|default:qc.inspector.username }}{% else %}ثبت نشده{% endif %}</span>
+                    </div>
+                    {% if qc.order %}
+                    <div class="col-md-6">
+                        <span class="text-xs text-muted d-block">سفارش مرتبط</span>
+                        <span class="font-mono fw-bold text-dark">{{ qc.order.order_number }} ({{ qc.order.customer.name }})</span>
+                    </div>
+                    {% endif %}
+                    {% if qc.planning %}
+                    <div class="col-md-6">
+                        <span class="text-xs text-muted d-block">برنامه‌ریزی تولید مرتبط</span>
+                        <span class="font-mono fw-bold text-dark">{{ qc.planning.plan_code }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if qc.defect_reason %}
+                <div class="mt-4 p-3 bg-danger-subtle rounded border border-danger-subtle">
+                    <span class="text-xs text-danger fw-bold d-block">علت عیب / عدم انطباق:</span>
+                    <p class="text-xs text-dark mb-0 fw-bold">{{ qc.defect_reason }}</p>
+                </div>
+                {% endif %}
+
+                {% if qc.notes %}
+                <div class="mt-3 pt-3 border-top text-xs text-muted">
+                    <strong>توضیحات و ملاحظات فنی:</strong> {{ qc.notes }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card-custom h-100">
+                <h6 class="fw-bold mb-3 text-primary border-bottom pb-2">تفکیک مقادیر و آمار کیفیت</h6>
+                <div class="d-flex flex-column gap-3">
+                    <div class="d-flex justify-content-between align-items-center p-2 bg-light rounded">
+                        <span class="text-xs text-muted">کل مقدار بازرسی:</span>
+                        <span class="font-mono fw-bold text-dark">{{ qc.inspected_quantity|intcomma }} {{ qc.product.unit }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center p-2 bg-success-subtle rounded">
+                        <span class="text-xs text-success fw-bold">مقدار سالم / تایید شده:</span>
+                        <span class="font-mono fw-bold text-success">{{ qc.passed_quantity|intcomma }} {{ qc.product.unit }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center p-2 bg-danger-subtle rounded">
+                        <span class="text-xs text-danger fw-bold">مقدار ضایعات / مردودی:</span>
+                        <span class="font-mono fw-bold text-danger">{{ qc.rejected_quantity|intcomma }} {{ qc.product.unit }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center p-2 bg-warning-subtle rounded">
+                        <span class="text-xs text-warning fw-bold">مقدار نیازمند دوباره‌کاری:</span>
+                        <span class="font-mono fw-bold text-warning">{{ qc.rework_quantity|intcomma }} {{ qc.product.unit }}</span>
+                    </div>
+
+                    <div class="border-top pt-2 text-center">
+                        <span class="text-xs text-muted d-block">درصد سلامت (Pass Rate)</span>
+                        <span class="font-mono fs-4 fw-bold text-primary">{{ qc.pass_rate }}%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

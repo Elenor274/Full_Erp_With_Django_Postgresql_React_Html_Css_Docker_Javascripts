@@ -1,4 +1,5 @@
 {% extends "core/base.html" %}
+{% load humanize %}
 
 {% block title %}موجودی انبار {{ warehouse.name }} - حاما پارچه{% endblock %}
 {% block page_title %}موجودی کالا در انبار {{ warehouse.name }}{% endblock %}
@@ -57,14 +58,14 @@
                         
                         <!-- موجودی فعلی -->
                         <td class="text-center font-mono fw-bold text-xs">
-                            <span class="px-2.5 py-1 bg-light rounded-2 border text-dark">{{ item.quantity|floatformat:0 }}</span>
+                            <span class="px-2.5 py-1 bg-light rounded-2 border text-dark">{{ item.quantity|floatformat:0|intcomma }}</span>
                         </td>
                         
                         <!-- حداقل -->
-                        <td class="text-center font-mono text-xs text-muted">{{ item.min_stock|floatformat:0 }}</td>
+                        <td class="text-center font-mono text-xs text-muted">{{ item.min_stock|floatformat:0|intcomma }}</td>
                         
                         <!-- نقطه سفارش -->
-                        <td class="text-center font-mono text-xs text-muted">{{ item.reorder_point|floatformat:0 }}</td>
+                        <td class="text-center font-mono text-xs text-muted">{{ item.reorder_point|floatformat:0|intcomma }}</td>
                         
                         <!-- وضعیت -->
                         <td class="text-center text-xs">

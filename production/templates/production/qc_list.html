@@ -1,0 +1,163 @@
+{% extends "core/base.html" %}
+{% load humanize %}
+
+{% block title %}کنترل کیفیت (QC) - حاما پارچه{% endblock %}
+{% block page_title %}مدیریت و برگه‌های بازرسی کنترل کیفیت (QC){% endblock %}
+
+{% block content %}
+<div class="fade-in-up">
+    <!-- Top Action Bar -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h4 class="fw-bold mb-1 text-gray-900">تضمین و کنترل کیفیت (Quality Control - QC)</h4>
+            <p class="text-muted text-xs mb-0">ثبت بازرسی مواد ورودی (IQC)، حین تولید (PQC) و محصول نهایی (FQC) همراه با تعیین تکلیف ضایعات و دوباره‌کاری</p>
+        </div>
+        <div>
+            <a href="{% url 'production:qc_create' %}" class="btn-primary-custom">
+                <i data-feather="plus"></i>
+                <span>ثبت برگه بازرسی QC جدید</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- KPI Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card-custom text-center py-3">
+                <span class="text-xs text-muted d-block mb-1">کل بازرسی شده</span>
+                <span class="font-mono fs-4 fw-bold text-dark">{{ total_inspected|intcomma }}</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-custom text-center py-3">
+                <span class="text-xs text-muted d-block mb-1">تایید شده (سالم)</span>
+                <span class="font-mono fs-4 fw-bold text-success">{{ total_passed|intcomma }}</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-custom text-center py-3">
+                <span class="text-xs text-muted d-block mb-1">مردودی / ضایعات</span>
+                <span class="font-mono fs-4 fw-bold text-danger">{{ total_rejected|intcomma }}</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-custom text-center py-3">
+                <span class="text-xs text-muted d-block mb-1">نرخ قبولی (Pass Rate)</span>
+                <span class="font-mono fs-4 fw-bold text-primary">{{ overall_pass_rate }}%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card-custom mb-4">
+        <form method="get" class="row g-3 align-items-center">
+            <div class="col-md-4">
+                <input type="text" name="q" value="{{ query }}" class="form-control-custom" placeholder="جستجو بر اساس کد QC، نام کالا، علت عیب...">
+            </div>
+            <div class="col-md-3">
+                <select name="type" class="form-control-custom" onchange="this.form.submit();">
+                    <option value="">-- همه انواع بازرسی --</option>
+                    {% for key, val in inspection_types %}
+                    <option value="{{ key }}" {% if type_filter == key %}selected{% endif %}>{{ val }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="status" class="form-control-custom" onchange="this.form.submit();">
+                    <option value="">-- همه وضعیت‌ها --</option>
+                    {% for key, val in status_choices %}
+                    <option value="{{ key }}" {% if status_filter == key %}selected{% endif %}>{{ val }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary-custom w-100">فیلتر</button>
+                {% if query or type_filter or status_filter %}
+                <a href="{% url 'production:qc_list' %}" class="btn btn-outline-soft">بازنشانی</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- QC Records Table -->
+    <div class="card-custom p-0 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">کد QC</th>
+                        <th>نوع بازرسی</th>
+                        <th>کالا / محصول</th>
+                        <th class="text-center">تاریخ بازرسی</th>
+                        <th class="text-center">مقدار بازرسی</th>
+                        <th class="text-center">مقدار سالم</th>
+                        <th class="text-center">مقدار ضایعات</th>
+                        <th class="text-center">نتیجه بازرسی</th>
+                        <th class="pe-4 text-end">عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for qc in qc_records %}
+                    <tr>
+                        <td class="ps-4 font-mono fw-bold text-xs text-primary">
+                            <a href="{% url 'production:qc_detail' qc.pk %}" class="text-decoration-none">
+                                {{ qc.qc_code }}
+                            </a>
+                        </td>
+                        <td class="text-xs">
+                            <span class="badge bg-light text-dark border">{{ qc.get_inspection_type_display }}</span>
+                        </td>
+                        <td>
+                            <div class="fw-bold text-dark text-xs">{{ qc.product.name }}</div>
+                            <span class="font-mono text-xxs text-muted">{{ qc.product.code }}</span>
+                        </td>
+                        <td class="text-center font-mono text-xs text-muted">{{ qc.inspection_date|date:"Y/m/d" }}</td>
+                        <td class="text-center font-mono text-xs fw-bold">{{ qc.inspected_quantity|intcomma }} {{ qc.product.unit }}</td>
+                        <td class="text-center font-mono text-xs text-success fw-bold">{{ qc.passed_quantity|intcomma }} {{ qc.product.unit }}</td>
+                        <td class="text-center font-mono text-xs text-danger fw-bold">
+                            {% if qc.rejected_quantity > 0 %}
+                            {{ qc.rejected_quantity|intcomma }} {{ qc.product.unit }}
+                            {% else %}
+                            <span class="text-muted">0</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center text-xs">
+                            {% if qc.status == 'passed' %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">تایید شده</span>
+                            {% elif qc.status == 'conditional' %}
+                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1">تایید مشروط</span>
+                            {% else %}
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">مردود / ضایعات</span>
+                            {% endif %}
+                        </td>
+                        <td class="pe-4 text-end">
+                            <div class="d-flex justify-content-end gap-1">
+                                <a href="{% url 'production:qc_detail' qc.pk %}" class="btn btn-sm btn-outline-soft p-1.5" title="مشاهده برگه">
+                                    <i data-feather="eye" style="width:14px;height:14px;"></i>
+                                </a>
+                                <a href="{% url 'production:qc_edit' qc.pk %}" class="btn-edit" title="ویرایش">
+                                    <i data-feather="edit-2" style="width:13px;height:13px;"></i>
+                                </a>
+                                <a href="{% url 'production:qc_delete' qc.pk %}" class="btn btn-sm btn-outline-danger p-1.5" title="حذف">
+                                    <i data-feather="trash-2" style="width:14px;height:14px;"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center py-5">
+                            <div class="text-muted">
+                                <i data-feather="check-square" style="width:48px;height:48px;opacity:0.3;" class="mb-3"></i>
+                                <p class="fw-bold mb-1">هیچ برگه بازرسی کنترل کیفیتی یافت نشد.</p>
+                                <span class="text-xs">جهت ثبت اولین برگه بازرسی QC، روی دکمه ثبت برگه جدید کلیک کنید.</span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

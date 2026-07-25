@@ -1,4 +1,5 @@
 {% extends "core/base.html" %}
+{% load humanize %}
 
 {% block title %}سند سفارش فروش #{{ order.order_code }} - حاما پارچه{% endblock %}
 {% block page_title %}شناسنامه و سند سفارش فروش{% endblock %}
@@ -66,7 +67,7 @@
             <div class="col-md-4 col-sm-12">
                 <div class="p-3 bg-light rounded-3 border h-100">
                     <span class="text-muted text-xxs d-block mb-1.5 fw-bold text-uppercase">ارزش کل فاکتور سفارش</span>
-                    <strong class="text-success font-mono text-sm d-block mb-1">{{ order.total_amount|floatformat:0|default:"0" }} <span class="text-xxs font-sans text-muted">ریال</span></strong>
+                    <strong class="text-success font-mono text-sm d-block mb-1">{{ order.total_amount|floatformat:0|intcomma|default:"0" }} <span class="text-xxs font-sans text-muted">ریال</span></strong>
                     <span class="text-muted text-xxs">مجموع ناخالص اقلام ثبتی</span>
                 </div>
             </div>
@@ -78,6 +79,98 @@
             <p class="text-dark text-xs mb-0 leading-relaxed">{{ order.description }}</p>
         </div>
         {% endif %}
+
+        <!-- بخش نقشه‌ها و فایل‌های فنی/طراحی -->
+        <div class="mb-4 p-3 bg-light rounded-3 border">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h6 class="fw-bold text-gray-900 mb-0 d-flex align-items-center gap-2" style="font-size: 0.95rem;">
+                    <i data-feather="folder" style="width: 18px; height: 18px; color: var(--accent);"></i>
+                    نقشه‌ها و فایل‌های واحد طراحی (Catia, AutoCAD, Photoshop, PDF و...)
+                </h6>
+                <button type="button" class="btn btn-sm btn-primary-custom d-flex align-items-center gap-1 text-xxs py-1 px-2.5" data-bs-toggle="collapse" data-bs-target="#uploadFileCollapse">
+                    <i data-feather="upload-cloud" style="width: 14px; height: 14px;"></i>
+                    افزودن نقشه جدید
+                </button>
+            </div>
+
+            <!-- فرم آکاردئونی آپلود نقشه -->
+            <div class="collapse mb-3" id="uploadFileCollapse">
+                <div class="card card-body bg-white border-2 border-dashed rounded-3 p-3">
+                    <form method="post" action="{% url 'orders:order_upload_design_file' order.pk %}" enctype="multipart/form-data" class="row g-2 align-items-center">
+                        {% csrf_token %}
+                        <div class="col-md-6">
+                            <label class="form-label text-xxs fw-bold mb-1">انتخاب فایل نقشه (Catia, PSD, DWG, PDF و...):</label>
+                            <input type="file" name="file" multiple class="form-control form-control-sm" required accept=".psd,.dwg,.dxf,.catpart,.catproduct,.catdrawing,.sldprt,.sldasm,.slddrw,.step,.stp,.igs,.iges,.pdf,.png,.jpg,.jpeg,.zip,.rar">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-xxs fw-bold mb-1">عنوان / توضیحات نقشه:</label>
+                            <input type="text" name="title" class="form-control form-control-sm" placeholder="مثال: نقشه برش نهایی Catia / شیت چاپ فتوشاپ">
+                        </div>
+                        <div class="col-md-2 d-grid" style="margin-top: 23px;">
+                            <button type="submit" class="btn btn-sm btn-primary">
+                                <i data-feather="check"></i> آپلود
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- جدول لیست فایل‌های نقشه سفارش -->
+            {% if design_files %}
+                <div class="table-responsive rounded-3 border bg-white mb-0">
+                    <table class="table table-hover align-middle mb-0" style="border: none;">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-3 text-xxs text-secondary py-2">نوع نرم‌افزار / فایل</th>
+                                <th class="text-xxs text-secondary py-2">عنوان و نام فایل</th>
+                                <th class="text-xxs text-secondary text-center py-2">حجم فایل</th>
+                                <th class="text-xxs text-secondary text-center py-2">تاریخ ثبت</th>
+                                <th class="pe-3 text-xxs text-secondary text-center py-2">عملیات دریافت</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for df in design_files %}
+                            <tr>
+                                <td class="ps-3">
+                                    <span class="badge {{ df.file_type_info.badge }} text-xxs py-1 px-2 d-inline-flex align-items-center gap-1">
+                                        <i data-feather="{{ df.file_type_info.icon }}" style="width:11px; height:11px;"></i>
+                                        {{ df.file_type_info.label }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <strong class="text-dark text-xs d-block">{{ df.title|default:df.file_name }}</strong>
+                                    <span class="text-muted text-xxs font-mono dir-ltr d-block" style="font-size: 0.75rem;">{{ df.file_name }}</span>
+                                </td>
+                                <td class="text-center text-xs font-mono">{{ df.file_size_display }}</td>
+                                <td class="text-center text-xxs text-muted font-mono">{{ df.uploaded_at|date:"Y/m/d H:i" }}</td>
+                                <td class="pe-3 text-center">
+                                    <div class="d-inline-flex gap-1">
+                                        <a href="{{ df.file.url }}" target="_blank" class="btn btn-xs btn-outline-secondary py-1 px-2 text-xxs d-inline-flex align-items-center gap-1">
+                                            <i data-feather="eye" style="width: 12px; height: 12px;"></i> مشاهده
+                                        </a>
+                                        <a href="{{ df.file.url }}" download class="btn btn-xs btn-outline-primary py-1 px-2 text-xxs d-inline-flex align-items-center gap-1">
+                                            <i data-feather="download" style="width: 12px; height: 12px;"></i> دانلود
+                                        </a>
+                                        <form method="post" action="{% url 'orders:order_delete_design_file' df.pk %}" class="d-inline" onsubmit="return confirm('آیا از حذف این نقشه اطمینان دارید؟');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-xs btn-outline-danger py-1 px-1.5 text-xxs">
+                                                <i data-feather="trash-2" style="width: 12px; height: 12px;"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="p-3 bg-white text-center rounded-3 border text-muted text-xs">
+                    <i data-feather="file" class="d-block mx-auto mb-1 opacity-50" style="width: 24px; height: 24px;"></i>
+                    هنوز هیچ نقشه یا فایل طراحی برای این سفارش اپلود نشده است.
+                </div>
+            {% endif %}
+        </div>
 
         <h6 class="fw-bold text-gray-900 mb-3 d-flex align-items-center gap-2" style="font-size: 0.95rem;">
             <i data-feather="list" style="width: 18px; height: 18px; color: var(--accent);"></i>
@@ -92,8 +185,8 @@
                         <th class="ps-4 text-xs text-secondary py-2.5" style="font-weight: 700;">شرح کالا / محصول</th>
                         <th class="text-xs text-secondary text-center py-2.5" style="font-weight: 700; width: 100px;">تعداد (تخته/طاقه)</th>
                         <th class="text-xs text-secondary text-center py-2.5" style="font-weight: 700; width: 100px;">وزن کل (kg)</th>
-                        <th class="text-xs text-secondary text-center py-2.5" style="font-weight: 700; width: 100px;">طول (m)</th>
-                        <th class="text-xs text-secondary text-center py-2.5" style="font-weight: 700; width: 100px;">عرض (cm)</th>
+                        <th class="text-xs text-secondary text-center py-2.5" style="font-weight: 700; width: 120px;">مدل</th>
+                        <th class="text-xs text-secondary text-center py-2.5" style="font-weight: 700; width: 120px;">رنگ</th>
                         <th class="pe-4 text-xs text-secondary text-center py-2.5" style="font-weight: 700; width: 150px;">قیمت کل (ریال)</th>
                     </tr>
                 </thead>
@@ -101,11 +194,11 @@
                     {% for item in items %}
                     <tr>
                         <td class="ps-4 text-xs fw-bold text-gray-800">{{ item.product.name }}</td>
-                        <td class="text-center font-mono text-xs">{{ item.quantity|floatformat:0 }}</td>
-                        <td class="text-center font-mono text-xs">{{ item.weight|floatformat:0|default:"—" }}</td>
-                        <td class="text-center font-mono text-xs">{{ item.length|floatformat:0|default:"—" }}</td>
-                        <td class="text-center font-mono text-xs">{{ item.width|floatformat:0|default:"—" }}</td>
-                        <td class="pe-4 text-center font-mono text-xs fw-bold text-success">{{ item.total_price|floatformat:0 }}</td>
+                        <td class="text-center font-mono text-xs">{{ item.quantity|floatformat:0|intcomma }}</td>
+                        <td class="text-center font-mono text-xs">{{ item.weight|floatformat:0|intcomma|default:"—" }}</td>
+                        <td class="text-center text-xs">{{ item.model_name|default:"—" }}</td>
+                        <td class="text-center text-xs">{{ item.color|default:"—" }}</td>
+                        <td class="pe-4 text-center font-mono text-xs fw-bold text-success">{{ item.total_price|floatformat:0|intcomma }}</td>
                     </tr>
                     {% empty %}
                     <tr>

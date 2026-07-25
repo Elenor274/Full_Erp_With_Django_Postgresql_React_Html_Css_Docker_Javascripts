@@ -1,4 +1,5 @@
 {% extends "core/base.html" %}
+{% load humanize %}
 
 {% block title %}برنامه‌ریزی تولید - حاما پارچه{% endblock %}
 {% block page_title %}برنامه‌ریزی و هدایت عملیات تولید{% endblock %}
@@ -88,9 +89,19 @@
                         
                         <!-- سفارش -->
                         <td>
-                            <a href="/orders/{{ plan.order.pk }}/" class="font-mono text-xs fw-bold text-decoration-none" style="color: var(--accent);">
+                            <a href="{% url 'orders:order_detail' plan.order.pk %}" class="font-mono text-xs fw-bold text-decoration-none" style="color: var(--accent);">
                                 #{{ plan.order.order_code }}
                             </a>
+                            {% if plan.order and plan.order.design_files.all %}
+                                <div class="mt-1 d-flex flex-wrap gap-1">
+                                    {% for df in plan.order.design_files.all %}
+                                        <a href="{{ df.file.url }}" target="_blank" class="badge {{ df.file_type_info.badge }} text-decoration-none py-0.5 px-1 text-xxs" title="{{ df.title|default:df.file_name }}">
+                                            <i data-feather="{{ df.file_type_info.icon }}" style="width:9px;height:9px;"></i>
+                                            {{ df.extension|upper }}
+                                        </a>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                         </td>
                         
                         <!-- محصول -->
@@ -110,10 +121,10 @@
                         </td>
                         
                         <!-- هدف تولید -->
-                        <td class="text-center font-mono text-xs fw-bold text-dark">{{ plan.target_quantity|floatformat:0 }}</td>
+                        <td class="text-center font-mono text-xs fw-bold text-dark">{{ plan.target_quantity|floatformat:0|intcomma }}</td>
 
                         <!-- تولید شده -->
-                        <td class="text-center font-mono text-xs fw-bold text-success">{{ plan.produced_quantity|floatformat:0 }}</td>
+                        <td class="text-center font-mono text-xs fw-bold text-success">{{ plan.produced_quantity|floatformat:0|intcomma }}</td>
 
                         <!-- کسری انبار -->
                         <td class="text-center text-xs">
