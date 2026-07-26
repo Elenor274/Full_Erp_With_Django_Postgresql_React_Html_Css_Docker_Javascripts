@@ -82,6 +82,7 @@
 
                         <!-- عملیات سریع -->
                         <td class="pe-4 text-center">
+                            {% if user.is_superuser or user.userprofile.access_warehouse %}
                             <div class="d-flex justify-content-center gap-1.5">
                                 <a href="{% url 'warehouse:stock_in' warehouse.id %}?product_id={{ item.product.id }}" class="btn btn-xs btn-success d-inline-flex align-items-center gap-1 text-xxs py-1 px-2.5 rounded-2 border-0 text-white" style="background: #10b981;">
                                     <i data-feather="plus" style="width: 12px; height: 12px;"></i> ورود کالا
@@ -90,6 +91,9 @@
                                     <i data-feather="minus" style="width: 12px; height: 12px;"></i> خروج کالا
                                 </a>
                             </div>
+                            {% else %}
+                            <span class="text-muted text-xxs">فقط مشاهده</span>
+                            {% endif %}
                         </td>
                     </tr>
                     {% empty %}

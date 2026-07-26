@@ -6,10 +6,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{% block title %}حاما پارچه{% endblock %}</title>
 
-  <!-- Third-party CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" />
+  <!-- Local Offline Static Assets & Icons -->
+  <link rel="stylesheet" href="{% static 'css/bootstrap.rtl.min.css' %}" />
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet" />
-  <script src="https://unpkg.com/feather-icons"></script>
+  <script src="{% static 'js/feather.min.js' %}"></script>
 
   <!-- Core App Stylesheet -->
   <link rel="stylesheet" href="{% static 'css/main.css' %}" />
@@ -274,14 +274,44 @@
     .kpi{display:flex;align-items:center;gap:12px}
     .kpi .kpi-icon{width:48px;height:48px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.05rem;background:linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(79, 70, 229, 0.04));border:1px solid rgba(79, 70, 229, 0.06);color:var(--accent)}
 
+    /* Feather SVG Icon Styling for offline / multi-device consistency */
+    i[data-feather], svg.feather {
+      display: inline-block;
+      width: 1.15em;
+      height: 1.15em;
+      stroke-width: 1.8px;
+      stroke: currentColor;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      vertical-align: -0.15em;
+    }
+
+    /* Table Responsive Wrapper for small/medium screens */
+    .table-responsive {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+    }
+
     .fade-in-up{animation:fadeUp .36s ease both}
     @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
-    @media (max-width:991px){
-      .sidebar{transform:translateX(110%)}
-      .sidebar:not(.hidden){transform:translateX(0)}
-      .main-content{margin-right:0 !important}
-      .topbar .search-input{display:none}
+    /* Responsive Breakpoints for all Monitor Dimensions (Mobile, Tablet, Laptop, 2K/4K) */
+    @media (max-width: 991.98px) {
+      .sidebar { transform: translateX(110%); width: 270px; }
+      .sidebar.show, .sidebar:not(.hidden) { transform: translateX(0); }
+      .main-content { margin-right: 0 !important; }
+      .topbar { padding: 0 14px; }
+      .topbar .search-input { width: 180px !important; }
+      .page-content { padding: 18px 12px; }
+    }
+    @media (min-width: 1400px) {
+      .container-fluid-custom { max-width: 1550px; }
+    }
+    @media (min-width: 1800px) {
+      .container-fluid-custom { max-width: 1750px; }
     }
   </style>
 </head>
@@ -344,11 +374,9 @@
           <i data-feather="grid"></i><span>داشبورد</span>
         </a>
         
-        {% if user.is_superuser or user.userprofile.is_admin_user %}
         <a href="{% url 'users:user_list' %}" class="nav-item-custom {% if 'users' in request.path and 'profile' not in request.path %}active{% endif %}" aria-label="مدیریت کاربران">
           <i data-feather="users"></i><span>مدیریت کاربران</span>
         </a>
-        {% endif %}
 
         <div class="nav-section-title">پیکربندی و حساب</div>
         <a href="{{ url_settings|default:'#' }}" class="nav-item-custom {% if 'settings' in request.path %}active{% endif %}" aria-label="تنظیمات">
@@ -366,45 +394,41 @@
       <div class="sidebar-tab-content" id="tab-commerce">
         <div class="nav-section-title">مدیریت بازرگانی</div>
         
-        {% if user.is_superuser or user.userprofile.access_orders %}
         <a href="{{ url_orders|default:'#' }}" class="nav-item-custom {% if 'orders' in request.path %}active{% endif %}" aria-label="سفارشات فروش">
           <i data-feather="shopping-bag"></i><span>سفارشات فروش</span>
         </a>
-        {% endif %}
 
-        {% if user.is_superuser or user.userprofile.access_customers %}
         <a href="{{ url_customers|default:'#' }}" class="nav-item-custom {% if 'customers' in request.path %}active{% endif %}" aria-label="بانک اطلاعات مشتریان">
           <i data-feather="users"></i><span>بانک مشتریان</span>
         </a>
-        {% endif %}
       </div>
 
       <!-- Production (Tab 3) -->
       <div class="sidebar-tab-content" id="tab-production">
-        {% if user.is_superuser or user.userprofile.access_products or user.userprofile.access_warehouse %}
         <div class="nav-section-title">محصولات و انبار</div>
-        {% if user.is_superuser or user.userprofile.access_products %}
         <a href="{{ url_products|default:'#' }}" class="nav-item-custom {% if 'products' in request.path %}active{% endif %}" aria-label="محصولات">
           <i data-feather="package"></i><span>محصولات</span>
         </a>
-        {% endif %}
-        {% if user.is_superuser or user.userprofile.access_warehouse %}
         <a href="{{ url_warehouse|default:'#' }}" class="nav-item-custom {% if 'warehouse' in request.path %}active{% endif %}" aria-label="انبارها">
           <i data-feather="archive"></i><span>انبارها</span>
         </a>
-        {% endif %}
-        {% endif %}
 
-        {% if user.is_superuser or user.userprofile.access_production %}
         {% url 'production:planning_list' as url_planning %}
+        {% url 'production:log_list' as url_logs %}
+        {% url 'production:production_variance' as url_variance %}
         {% url 'production:machine_list' as url_machines %}
         {% url 'production:operator_list' as url_operators %}
         {% url 'production:stage_list' as url_stages %}
 
-        <div class="nav-section-title">برنامه‌ریزی و تولید</div>
+        <div class="nav-section-title">برنامه‌ریزی و ثبت عملکرد</div>
         <a href="{{ url_planning|default:'#' }}" class="nav-item-custom {% if 'production/planning' in request.path %}active{% endif %}" aria-label="برنامه‌ریزی تولید">
           <i data-feather="calendar"></i><span>برنامه‌ریزی تولید</span>
         </a>
+        <a href="{{ url_logs|default:'#' }}" class="nav-item-custom {% if 'production/logs' in request.path %}active{% endif %}" aria-label="تولید (ثبت کارکرد)">
+          <i data-feather="clipboard"></i><span>تولید (ثبت کارکرد)</span>
+        </a>
+
+        <div class="nav-section-title">زیرساخت و کارگاه</div>
         <a href="{{ url_machines|default:'#' }}" class="nav-item-custom {% if 'production/machines' in request.path %}active{% endif %}" aria-label="ماشین‌آلات">
           <i data-feather="cpu"></i><span>ماشین‌آلات</span>
         </a>
@@ -420,30 +444,27 @@
         {% url 'production:bom_explosion' as url_explosion %}
         {% url 'production:qc_list' as url_qc %}
 
-        <div class="nav-section-title">مهندسی و درخت محصول</div>
+        <div class="nav-section-title">مهندسی، کیفیت و نت</div>
         <a href="{{ url_bom }}" class="nav-item-custom {% if 'production/bom' in request.path and 'explosion' not in request.path %}active{% endif %}" aria-label="درخت محصول BOM">
           <i data-feather="git-merge"></i><span>ساختار درخت محصول (BOM)</span>
         </a>
         <a href="{{ url_explosion }}" class="nav-item-custom {% if 'production/bom/explosion' in request.path %}active{% endif %}" aria-label="انفجار مواد">
           <i data-feather="layers"></i><span>انفجار مواد اولیه (MRP)</span>
         </a>
-
-        <div class="nav-section-title">تضمین و کنترل کیفیت</div>
         <a href="{{ url_qc }}" class="nav-item-custom {% if 'production/qc' in request.path %}active{% endif %}" aria-label="کنترل کیفیت QC">
           <i data-feather="check-square"></i><span>کنترل کیفیت (QC)</span>
         </a>
-
-        <div class="nav-section-title">نگهداری و تعمیرات (نت)</div>
         <a href="{{ url_maintenance|default:'#' }}" class="nav-item-custom {% if 'production/maintenance' in request.path %}active{% endif %}" aria-label="مدیریت تعمیرات">
           <i data-feather="tool"></i><span>درخواست‌های تعمیر و نت</span>
         </a>
-        {% endif %}
       </div>
 
       <!-- Reports (Tab 4) -->
       <div class="sidebar-tab-content" id="tab-reports">
-        {% if user.is_superuser or user.userprofile.access_reports %}
-        <div class="nav-section-title">گزارشات و رهگیری هوشمند</div>
+        <div class="nav-section-title">گزارشات مدیریتی و تحلیل</div>
+        <a href="{% url 'production:production_variance' %}" class="nav-item-custom {% if 'production/variance' in request.path %}active{% endif %}" aria-label="تحلیل انحراف از تولید">
+          <i data-feather="bar-chart-2"></i><span>تحلیل انحراف از تولید</span>
+        </a>
         <a href="/reports/?tab=tracking" class="nav-item-custom {% if 'reports' in request.path and 'tracking' in request.GET.tab or 'reports' in request.path and not request.GET.tab %}active{% endif %}" aria-label="رهگیری هوشمند">
           <i data-feather="search"></i><span>رهگیری هوشمند سفارش</span>
         </a>
@@ -456,7 +477,6 @@
         <a href="/reports/?tab=sales" class="nav-item-custom {% if 'reports' in request.path and 'sales' in request.GET.tab %}active{% endif %}" aria-label="تحلیل سفارشات">
           <i data-feather="trending-up"></i><span>تحلیل فروش و مشتری</span>
         </a>
-        {% endif %}
       </div>
     </nav>
   </aside>
@@ -524,7 +544,7 @@
   </div>
 
   <!-- Core scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
 
   <script>
     document.addEventListener('DOMContentLoaded', function(){
@@ -690,13 +710,17 @@
         });
 
         // Initialize Feather Icons automatically across all views
-        if (window.feather) {
-            try {
-                feather.replace({ 'stroke-width': 1.6 });
-            } catch (e) {
-                console.warn('Feather replacement error:', e);
+        function renderFeatherIcons() {
+            if (window.feather) {
+                try {
+                    feather.replace({ 'stroke-width': 1.6 });
+                } catch (e) {
+                    console.warn('Feather replacement error:', e);
+                }
             }
         }
+        renderFeatherIcons();
+        window.addEventListener('load', renderFeatherIcons);
 
         // Convert all input type="date" to text with .jalali-date-input for offline Jalali picker
         document.querySelectorAll('input[type="date"]').forEach(function(input) {

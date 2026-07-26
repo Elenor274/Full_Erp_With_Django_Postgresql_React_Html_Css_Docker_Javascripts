@@ -1,5 +1,5 @@
 from django import forms
-from .models import Machine, Operator, WorkStage, Planning, MaintenanceActivity, BOM, BOMItem, QualityControl
+from .models import Machine, Operator, WorkStage, Planning, MaintenanceActivity, BOM, BOMItem, QualityControl, ProductionLog
 from products.models import Product
 from warehouse.models import Warehouse
 
@@ -320,4 +320,72 @@ class QualityControlForm(forms.ModelForm):
             return jd.togregorian()
         except Exception:
             raise forms.ValidationError("فرمت تاریخ بازرسی نامعتبر است.")
+
+
+class ProductionLogForm(forms.ModelForm):
+    date = forms.CharField(
+        label="تاریخ ثبت کارکرد / تولید",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control-custom jalali-date-input',
+            'placeholder': '۱۴۰۵/۰۴/۲۸',
+            'autocomplete': 'off'
+        })
+    )
+
+    class Meta:
+        model = ProductionLog
+        fields = [
+            'log_code', 'planning', 'date', 'shift', 'operator',
+            'produced_quantity', 'rejected_quantity', 'stoppage_minutes', 'stoppage_reason',
+            'receive_to_warehouse', 'warehouse', 'deduct_raw_material', 'notes'
+        ]
+        widgets = {
+            'log_code': forms.TextInput(attrs={'class': 'form-control-custom', 'placeholder': 'تولید خودکار در صورت خالی بودن'}),
+            'planning': forms.Select(attrs={'class': 'form-control-custom'}),
+            'shift': forms.Select(attrs={'class': 'form-control-custom'}),
+            'operator': forms.Select(attrs={'class': 'form-control-custom'}),
+            'produced_quantity': forms.NumberInput(attrs={'class': 'form-control-custom', 'step': '0.01', 'placeholder': 'مقدار تولید سالم'}),
+            'rejected_quantity': forms.NumberInput(attrs={'class': 'form-control-custom', 'step': '0.01', 'placeholder': 'مقدار ضایعات'}),
+            'stoppage_minutes': forms.NumberInput(attrs={'class': 'form-control-custom', 'placeholder': 'زمان توقف به دقیقه'}),
+            'stoppage_reason': forms.Textarea(attrs={'class': 'form-control-custom', 'rows': 2, 'placeholder': 'توضیحات و علل توقف خط'}),
+            'receive_to_warehouse': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'warehouse': forms.Select(attrs={'class': 'form-control-custom'}),
+            'deduct_raw_material': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control-custom', 'rows': 2, 'placeholder': 'توضیحات و ملاحظات سرپرست واحد'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk and self.instance.date:
+            import jdatetime
+            try:
+                jd = jdatetime.date.fromgregorian(date=self.instance.date)
+                self.fields['date'].initial = jd.strftime("%Y/%m/%d")
+            except Exception:
+                pass
+        else:
+            import jdatetime
+            try:
+                self.fields['date'].initial = jdatetime.date.today().strftime("%Y/%m/%d")
+            except Exception:
+                self.fields['date'].initial = "1405/04/28"
+
+    def clean_date(self):
+        val = self.cleaned_data.get('date', '')
+        if val:
+            val = str(val).strip()
+        if not val:
+            raise forms.ValidationError("تاریخ تولید الزامی است.")
+        try:
+            farsi_to_eng = str.maketrans('۰۱۲۳۴۵۶۷۸۹', '0123456789')
+            val = val.translate(farsi_to_eng).replace('-', '/')
+            parts = list(map(int, val.split('/')))
+            if len(parts) != 3:
+                raise Exception()
+            import jdatetime
+            jd = jdatetime.date(parts[0], parts[1], parts[2])
+            return jd.togregorian()
+        except Exception:
+            raise forms.ValidationError("فرمت تاریخ تولید نامعتبر است.")
+
 

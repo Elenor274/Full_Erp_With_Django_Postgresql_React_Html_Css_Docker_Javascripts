@@ -27,9 +27,11 @@
                 <span class="badge bg-primary-subtle text-primary px-3 py-1.5 rounded-3 text-xs fw-bold" style="width: fit-content; border: 1px solid rgba(79, 70, 229, 0.12);">
                     {{ warehouses|length }} انبار فعال سیستمی
                 </span>
+                {% if user.is_superuser or user.userprofile.access_warehouse %}
                 <a href="{% url 'warehouse:warehouse_create' %}" class="btn btn-success text-white d-inline-flex align-items-center gap-1.5 py-2 px-3.5 rounded-3 border-0 text-xs fw-bold font-sans" style="background: var(--accent); box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15); width: fit-content;">
                     <i data-feather="plus-circle" style="width: 15px; height: 15px;"></i> تعریف انبار جدید
                 </a>
+                {% endif %}
             </div>
         </div>
     </div>

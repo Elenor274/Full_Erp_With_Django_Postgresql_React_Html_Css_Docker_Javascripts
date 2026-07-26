@@ -2,6 +2,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from django.shortcuts import redirect
+from users.forms import CustomAuthenticationForm
 from . import views
 
 app_name = 'core'
@@ -12,7 +13,7 @@ def root_redirect(request):
     return redirect('core:login')
 
 urlpatterns = [
-    path('login/', auth_views.LoginView.as_view(template_name="core/login.html"), name='login'),
+    path('login/', auth_views.LoginView.as_view(template_name="core/login.html", authentication_form=CustomAuthenticationForm), name='login'),
 
     # logout با GET
     path('logout/', views.logout_view, name='logout'),

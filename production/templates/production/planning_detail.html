@@ -179,18 +179,63 @@
   <div class="col-lg-4">
     <!-- وضعیت پیشرفت و آمار -->
     <div class="card-custom mb-4">
-      <div class="border-bottom pb-3 mb-3">
-        <h3 class="h5 mb-0">وضعیت تولید و پیشرفت</h3>
+      <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+        <h3 class="h5 mb-0">وضعیت کارکرد شیفت‌ها و تولید واقعی</h3>
+        <a href="{% url 'production:log_create' %}?planning_id={{ plan.id }}" class="btn btn-sm btn-success text-white py-1.5 px-3 text-xs fw-bold">
+          <i data-feather="plus" style="width:14px;"></i> ثبت کارکرد شیفت جدید
+        </a>
       </div>
-      <div class="text-center py-3">
-        <div class="text-muted text-xs mb-1">مقدار هدف تولید</div>
-        <div class="fs-2 fw-bold text-dark font-sans">{{ plan.target_quantity|floatformat:0 }} <span class="fs-6 fw-normal text-muted">{{ plan.product.unit }}</span></div>
-
-        <hr class="my-3">
-
-        <div class="text-muted text-xs mb-1">مقدار تولید شده واقعی</div>
-        <div class="fs-2 fw-bold text-success font-sans">{{ plan.produced_quantity|floatformat:0 }} <span class="fs-6 fw-normal text-muted">{{ plan.product.unit }}</span></div>
+      <div class="row g-3 text-center mb-3">
+        <div class="col-6">
+          <div class="p-3 bg-light rounded-3 border">
+            <span class="text-muted text-xs d-block mb-1">مقدار هدف برنامه</span>
+            <span class="fs-4 fw-bold text-dark font-mono">{{ plan.target_quantity|floatformat:0 }} {{ plan.product.unit }}</span>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="p-3 bg-success-subtle rounded-3 border border-success">
+            <span class="text-success text-xs d-block mb-1 fw-bold">مجموع تولید سالم ثبت‌شده</span>
+            <span class="fs-4 fw-bold text-success font-mono">{{ plan.produced_quantity|floatformat:0 }} {{ plan.product.unit }}</span>
+          </div>
+        </div>
       </div>
+
+      {% if plan.execution_logs.all %}
+        <div class="table-responsive rounded border bg-white mb-0">
+          <table class="table table-hover align-middle mb-0 text-xs">
+            <thead class="bg-light">
+              <tr>
+                <th class="ps-3 py-2">کد برگه</th>
+                <th class="py-2">تاریخ / شیفت</th>
+                <th class="py-2 text-center">اپراتور</th>
+                <th class="py-2 text-center">تولید سالم</th>
+                <th class="py-2 text-center">ضایعات</th>
+                <th class="py-2 text-center">توقف</th>
+                <th class="pe-3 py-2 text-start">مشاهده</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for log in plan.execution_logs.all %}
+                <tr>
+                  <td class="ps-3 fw-bold font-mono text-primary">{{ log.log_code }}</td>
+                  <td>{{ log.date_jalali }} ({{ log.get_shift_display }})</td>
+                  <td class="text-center">{% if log.operator %}{{ log.operator.first_name }} {{ log.operator.last_name }}{% else %}-{% endif %}</td>
+                  <td class="text-center font-mono fw-bold text-success">{{ log.produced_quantity|floatformat:0 }} {{ plan.product.unit }}</td>
+                  <td class="text-center font-mono text-danger">{% if log.rejected_quantity > 0 %}{{ log.rejected_quantity|floatformat:0 }}{% else %}-{% endif %}</td>
+                  <td class="text-center font-mono">{% if log.stoppage_minutes > 0 %}{{ log.stoppage_minutes }} د{% else %}-{% endif %}</td>
+                  <td class="pe-3 text-start">
+                    <a href="{% url 'production:log_detail' log.pk %}" class="btn btn-xs btn-outline-primary py-0 px-2">جزئیات</a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="text-center py-3 text-muted text-xs bg-light rounded-3">
+          هنوز هیچ برگه کارکرد شیفتی برای این برنامه ثبت نشده است.
+        </div>
+      {% endif %}
     </div>
 
     <!-- دکمه‌های کنترل -->
@@ -199,16 +244,20 @@
         <h3 class="h5 mb-0">عملیات سیستمی</h3>
       </div>
       <div class="d-grid gap-2">
+        {% if user.is_superuser or user.userprofile.access_production_planning or user.userprofile.access_production %}
         <a href="{% url 'production:planning_edit' plan.pk %}" class="btn btn-primary-custom text-center">
           <i data-feather="edit-2" style="width:16px;"></i> ویرایش برنامه‌ریزی
         </a>
+        {% endif %}
         <a href="{% url 'production:planning_list' %}" class="btn btn-outline-soft text-center">
           <i data-feather="arrow-left" style="width:16px;"></i> بازگشت به لیست
         </a>
+        {% if user.is_superuser or user.userprofile.access_production_planning or user.userprofile.access_production %}
         <hr class="my-2">
         <a href="{% url 'production:planning_delete' plan.pk %}" class="btn btn-sm btn-outline-danger text-center">
           <i data-feather="trash" style="width:14px;"></i> حذف کامل برنامه‌ریزی
         </a>
+        {% endif %}
       </div>
     </div>
   </div>

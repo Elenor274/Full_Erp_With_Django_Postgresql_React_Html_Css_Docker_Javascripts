@@ -88,71 +88,160 @@
 
                 <!-- بخش دوم: سطوح دسترسی -->
                 <div class="mb-4">
-                    <h6 class="font-bold text-primary mb-3" style="font-weight: 700;"><i data-feather="shield" class="me-1 align-middle" style="width: 16px;"></i>سطوح دسترسی (ماژول‌ها)</h6>
-                    <p class="text-muted text-xs mb-3">بخش‌هایی که مایلید این کاربر به آن‌ها دسترسی داشته باشد را انتخاب کنید:</p>
+                    <h6 class="font-bold text-primary mb-3" style="font-weight: 700;"><i data-feather="shield" class="me-1 align-middle" style="width: 16px;"></i>سطوح دسترسی (ماژول‌ها و بخش‌های سیستم)</h6>
+                    <p class="text-muted text-xs mb-3">دسترسی دقیق کاربر به هریک از زیربخش‌های سیستم را مشخص کنید:</p>
 
-                    <div class="row g-3">
+                    <!-- زیربخش تجاری -->
+                    <div class="fw-bold text-slate text-xs mb-2 mt-3 pb-1 border-bottom" style="font-weight: 700;">۱. مدیریت بازرگانی و فروش</div>
+                    <div class="row g-3 mb-3">
                         <div class="col-md-6">
                             <div class="form-check form-switch p-3 rounded-3 border bg-light-subtle transition-all hover-border-primary" style="padding-right: 3.5rem !important; padding-left: 1rem !important;">
                                 <input class="form-check-input" type="checkbox" role="switch" id="{{ profile_form.access_orders.id_for_label }}" name="{{ profile_form.access_orders.html_name }}" {% if profile_form.access_orders.value %}checked{% endif %} style="float: right; margin-right: -2.5rem;">
                                 <label class="form-check-label font-medium text-sm ms-2" for="{{ profile_form.access_orders.id_for_label }}" style="font-weight: 500;">
-                                    دسترسی به سفارشات
+                                    دسترسی به سفارشات فروش
                                 </label>
-                                <div class="text-muted text-xxs mt-1">مشاهده، ایجاد و مدیریت سفارشات فروش و ثبت پیش‌فاکتورها</div>
+                                <div class="text-muted text-xxs mt-1">مشاهده، ثبت و مدیریت سفارشات فروش و پیش‌فاکتورها</div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-check form-switch p-3 rounded-3 border bg-light-subtle transition-all hover-border-primary" style="padding-right: 3.5rem !important; padding-left: 1rem !important;">
                                 <input class="form-check-input" type="checkbox" role="switch" id="{{ profile_form.access_customers.id_for_label }}" name="{{ profile_form.access_customers.html_name }}" {% if profile_form.access_customers.value %}checked{% endif %} style="float: right; margin-right: -2.5rem;">
                                 <label class="form-check-label font-medium text-sm ms-2" for="{{ profile_form.access_customers.id_for_label }}" style="font-weight: 500;">
-                                    دسترسی به مشتریان
+                                    دسترسی به بانک مشتریان
                                 </label>
-                                <div class="text-muted text-xxs mt-1">مشاهده، ثبت و ویرایش اطلاعات خریداران و مشتریان</div>
+                                <div class="text-muted text-xxs mt-1">مشاهده، ثبت و ویرایش اطلاعات خریداران و پرونده مشتریان</div>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- زیربخش محصولات و انبار -->
+                    <div class="fw-bold text-slate text-xs mb-2 mt-3 pb-1 border-bottom" style="font-weight: 700;">۲. کالا و انبارداری</div>
+                    <div class="row g-3 mb-3">
                         <div class="col-md-6">
                             <div class="form-check form-switch p-3 rounded-3 border bg-light-subtle transition-all hover-border-primary" style="padding-right: 3.5rem !important; padding-left: 1rem !important;">
                                 <input class="form-check-input" type="checkbox" role="switch" id="{{ profile_form.access_products.id_for_label }}" name="{{ profile_form.access_products.html_name }}" {% if profile_form.access_products.value %}checked{% endif %} style="float: right; margin-right: -2.5rem;">
                                 <label class="form-check-label font-medium text-sm ms-2" for="{{ profile_form.access_products.id_for_label }}" style="font-weight: 500;">
-                                    دسترسی به محصولات
+                                    دسترسی به کالا و محصولات
                                 </label>
-                                <div class="text-muted text-xxs mt-1">مدیریت کالاها، پارچه‌ها، گروه‌های محصولی و قیمت‌ها</div>
+                                <div class="text-muted text-xxs mt-1">مدیریت محصولات، پارچه‌ها، گروه‌بندی کالا و شناسه ردیابی</div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-check form-switch p-3 rounded-3 border bg-light-subtle transition-all hover-border-primary" style="padding-right: 3.5rem !important; padding-left: 1rem !important;">
                                 <input class="form-check-input" type="checkbox" role="switch" id="{{ profile_form.access_warehouse.id_for_label }}" name="{{ profile_form.access_warehouse.html_name }}" {% if profile_form.access_warehouse.value %}checked{% endif %} style="float: right; margin-right: -2.5rem;">
                                 <label class="form-check-label font-medium text-sm ms-2" for="{{ profile_form.access_warehouse.id_for_label }}" style="font-weight: 500;">
-                                    دسترسی به انبار و موجودی
+                                    دسترسی به انباردار و موجودی
                                 </label>
-                                <div class="text-muted text-xxs mt-1">تعریف انبارها، حواله‌ها، تراکنش‌های ورود/خروج کالا و مدیریت موجودی</div>
+                                <div class="text-muted text-xxs mt-1">مدیریت انبارها، حواله ورود/خروج کالا و کاردکس موجودی</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- زیربخش تفکیک شده تولید -->
+                    <div class="fw-bold text-slate text-xs mb-2 mt-3 pb-1 border-bottom" style="font-weight: 700;">۳. مدیریت و عملیات کارخانه (تولید)</div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-12">
+                            <div class="form-check form-switch p-3 rounded-3 border border-primary-subtle transition-all" style="padding-right: 3.5rem !important; padding-left: 1rem !important; background-color: rgba(79, 70, 229, 0.04);">
+                                <input class="form-check-input" type="checkbox" role="switch" id="{{ profile_form.access_production.id_for_label }}" name="{{ profile_form.access_production.html_name }}" {% if profile_form.access_production.value %}checked{% endif %} style="float: right; margin-right: -2.5rem;">
+                                <label class="form-check-label font-bold text-primary ms-2" for="{{ profile_form.access_production.id_for_label }}" style="font-weight: 700;">
+                                    مدیریت ارشد تولید (دسترسی کامل به تمام زیربخش‌های تولید)
+                                </label>
+                                <div class="text-primary text-xxs mt-1" style="font-size: 0.72rem;">در صورت فعال‌سازی، کاربر به کلیه بخش‌های برنامه‌ریزی، ثبت عملکرد، ماشین‌آلات، اپراتورها، BOM و نت دسترسی خواهد داشت.</div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-check form-switch p-3 rounded-3 border bg-light-subtle transition-all hover-border-primary" style="padding-right: 3.5rem !important; padding-left: 1rem !important;">
-                                <input class="form-check-input" type="checkbox" role="switch" id="{{ profile_form.access_production.id_for_label }}" name="{{ profile_form.access_production.html_name }}" {% if profile_form.access_production.value %}checked{% endif %} style="float: right; margin-right: -2.5rem;">
-                                <label class="form-check-label font-medium text-sm ms-2" for="{{ profile_form.access_production.id_for_label }}" style="font-weight: 500;">
-                                    دسترسی به تولید و ماشین‌آلات
+                                <input class="form-check-input" type="checkbox" role="switch" id="{{ profile_form.access_production_planning.id_for_label }}" name="{{ profile_form.access_production_planning.html_name }}" {% if profile_form.access_production_planning.value %}checked{% endif %} style="float: right; margin-right: -2.5rem;">
+                                <label class="form-check-label font-medium text-sm ms-2" for="{{ profile_form.access_production_planning.id_for_label }}" style="font-weight: 500;">
+                                    دسترسی به برنامه‌ریزی تولید
                                 </label>
-                                <div class="text-muted text-xxs mt-1">برنامه‌ریزی تولید، تعریف ماشین‌آلات و اپراتورها و نگهداری تعمیرات</div>
+                                <div class="text-muted text-xxs mt-1">تعریف و ایجاد برنامه‌های تولید، تخصیص خطوط و زمان‌بندی سفارشات</div>
                             </div>
                         </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch p-3 rounded-3 border bg-light-subtle transition-all hover-border-primary" style="padding-right: 3.5rem !important; padding-left: 1rem !important;">
+                                <input class="form-check-input" type="checkbox" role="switch" id="{{ profile_form.access_production_execution.id_for_label }}" name="{{ profile_form.access_production_execution.html_name }}" {% if profile_form.access_production_execution.value %}checked{% endif %} style="float: right; margin-right: -2.5rem;">
+                                <label class="form-check-label font-medium text-sm ms-2" for="{{ profile_form.access_production_execution.id_for_label }}" style="font-weight: 500;">
+                                    دسترسی به تولید (ثبت کارکرد/شیفت)
+                                </label>
+                                <div class="text-muted text-xxs mt-1">مخصوص سرپرستان سالن؛ ثبت متراژ تولیدی، توقفات خط و ضایعات شیفت</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch p-3 rounded-3 border bg-light-subtle transition-all hover-border-primary" style="padding-right: 3.5rem !important; padding-left: 1rem !important;">
+                                <input class="form-check-input" type="checkbox" role="switch" id="{{ profile_form.access_production_machines.id_for_label }}" name="{{ profile_form.access_production_machines.html_name }}" {% if profile_form.access_production_machines.value %}checked{% endif %} style="float: right; margin-right: -2.5rem;">
+                                <label class="form-check-label font-medium text-sm ms-2" for="{{ profile_form.access_production_machines.id_for_label }}" style="font-weight: 500;">
+                                    دسترسی به ماشین‌آلات
+                                </label>
+                                <div class="text-muted text-xxs mt-1">تعریف دستگاه‌های بافندگی، رنگرزی و تکمیل و وضعیت کارکرد آن‌ها</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch p-3 rounded-3 border bg-light-subtle transition-all hover-border-primary" style="padding-right: 3.5rem !important; padding-left: 1rem !important;">
+                                <input class="form-check-input" type="checkbox" role="switch" id="{{ profile_form.access_production_operators.id_for_label }}" name="{{ profile_form.access_production_operators.html_name }}" {% if profile_form.access_production_operators.value %}checked{% endif %} style="float: right; margin-right: -2.5rem;">
+                                <label class="form-check-label font-medium text-sm ms-2" for="{{ profile_form.access_production_operators.id_for_label }}" style="font-weight: 500;">
+                                    دسترسی به اپراتورها و پرسنل
+                                </label>
+                                <div class="text-muted text-xxs mt-1">ثبت و مدیریت شناسه اپراتورهای خط تولید و شیفت کاری</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch p-3 rounded-3 border bg-light-subtle transition-all hover-border-primary" style="padding-right: 3.5rem !important; padding-left: 1rem !important;">
+                                <input class="form-check-input" type="checkbox" role="switch" id="{{ profile_form.access_production_stages.id_for_label }}" name="{{ profile_form.access_production_stages.html_name }}" {% if profile_form.access_production_stages.value %}checked{% endif %} style="float: right; margin-right: -2.5rem;">
+                                <label class="form-check-label font-medium text-sm ms-2" for="{{ profile_form.access_production_stages.id_for_label }}" style="font-weight: 500;">
+                                    دسترسی به مراحل کاری (ایستگاه‌ها)
+                                </label>
+                                <div class="text-muted text-xxs mt-1">تعریف مراحل ریسندگی، بافندگی، چله‌کشی، رنگرزی، چاپ و تکمیل</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch p-3 rounded-3 border bg-light-subtle transition-all hover-border-primary" style="padding-right: 3.5rem !important; padding-left: 1rem !important;">
+                                <input class="form-check-input" type="checkbox" role="switch" id="{{ profile_form.access_production_bom.id_for_label }}" name="{{ profile_form.access_production_bom.html_name }}" {% if profile_form.access_production_bom.value %}checked{% endif %} style="float: right; margin-right: -2.5rem;">
+                                <label class="form-check-label font-medium text-sm ms-2" for="{{ profile_form.access_production_bom.id_for_label }}" style="font-weight: 500;">
+                                    دسترسی به BOM و انفجار مواد (MRP)
+                                </label>
+                                <div class="text-muted text-xxs mt-1">تعریف فرمول و درخت محصول، ضریب مصرف نخ و رنگ و محاسبه نیازمندی مواد</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch p-3 rounded-3 border bg-light-subtle transition-all hover-border-primary" style="padding-right: 3.5rem !important; padding-left: 1rem !important;">
+                                <input class="form-check-input" type="checkbox" role="switch" id="{{ profile_form.access_production_qc.id_for_label }}" name="{{ profile_form.access_production_qc.html_name }}" {% if profile_form.access_production_qc.value %}checked{% endif %} style="float: right; margin-right: -2.5rem;">
+                                <label class="form-check-label font-medium text-sm ms-2" for="{{ profile_form.access_production_qc.id_for_label }}" style="font-weight: 500;">
+                                    دسترسی به کنترل کیفیت (QC)
+                                </label>
+                                <div class="text-muted text-xxs mt-1">ثبت تست‌های کیفی، درجه‌بندی پارچه و مجوز تایید آزمایشگاه</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch p-3 rounded-3 border bg-light-subtle transition-all hover-border-primary" style="padding-right: 3.5rem !important; padding-left: 1rem !important;">
+                                <input class="form-check-input" type="checkbox" role="switch" id="{{ profile_form.access_production_maintenance.id_for_label }}" name="{{ profile_form.access_production_maintenance.html_name }}" {% if profile_form.access_production_maintenance.value %}checked{% endif %} style="float: right; margin-right: -2.5rem;">
+                                <label class="form-check-label font-medium text-sm ms-2" for="{{ profile_form.access_production_maintenance.id_for_label }}" style="font-weight: 500;">
+                                    دسترسی به تعمیرات و نگهداری (نت)
+                                </label>
+                                <div class="text-muted text-xxs mt-1">ثبت خرابی دستگاه‌ها، تعمیرات پیشگیرانه و گزارشات سرویس فنی</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- بخش چهارم: گزارشات و ادمین -->
+                    <div class="fw-bold text-slate text-xs mb-2 mt-3 pb-1 border-bottom" style="font-weight: 700;">۴. گزارشات و مدیریت سیستم</div>
+                    <div class="row g-3">
                         <div class="col-md-6">
                             <div class="form-check form-switch p-3 rounded-3 border bg-light-subtle transition-all hover-border-primary" style="padding-right: 3.5rem !important; padding-left: 1rem !important;">
                                 <input class="form-check-input" type="checkbox" role="switch" id="{{ profile_form.access_reports.id_for_label }}" name="{{ profile_form.access_reports.html_name }}" {% if profile_form.access_reports.value %}checked{% endif %} style="float: right; margin-right: -2.5rem;">
                                 <label class="form-check-label font-medium text-sm ms-2" for="{{ profile_form.access_reports.id_for_label }}" style="font-weight: 500;">
-                                    دسترسی به گزارشات و رهگیری هوشمند
+                                    دسترسی به گزارشات مدیریتی
                                 </label>
-                                <div class="text-muted text-xxs mt-1">مشاهده گزارشات جامع فروش، تحلیل انبارداری، توقفات خط تولید و هوش کسب‌وکار</div>
+                                <div class="text-muted text-xxs mt-1">مشاهده گزارشات تحلیل فروش، انبار، ردیابی هوشمند و تحلیل انحراف</div>
                             </div>
                         </div>
-                        <div class="col-md-12">
+                        <div class="col-md-6">
                             <div class="form-check form-switch p-3 rounded-3 border bg-danger-subtle border-danger-subtle transition-all" style="padding-right: 3.5rem !important; padding-left: 1rem !important; background-color: rgba(239, 68, 68, 0.04); border-color: rgba(239, 68, 68, 0.1) !important;">
                                 <input class="form-check-input" type="checkbox" role="switch" id="{{ profile_form.is_admin_user.id_for_label }}" name="{{ profile_form.is_admin_user.html_name }}" {% if profile_form.is_admin_user.value %}checked{% endif %} style="float: right; margin-right: -2.5rem;">
                                 <label class="form-check-label font-bold text-danger ms-2" for="{{ profile_form.is_admin_user.id_for_label }}" style="font-weight: 700;">
-                                    دسترسی مدیریت سیستم (ادمین کل)
+                                    مدیریت کاربران (ادمین سیستم)
                                 </label>
-                                <div class="text-danger text-xxs mt-1" style="font-size: 0.72rem;">امکان تعریف، حذف، تغییر رمز و ویرایش دسترسی‌های سایر کاربران</div>
+                                <div class="text-danger text-xxs mt-1" style="font-size: 0.72rem;">امکان تعریف کاربر، ویرایش سطوح دسترسی و تغییر رمز عبور کاربران</div>
                             </div>
                         </div>
                     </div>

@@ -1,0 +1,187 @@
+{% extends "core/base.html" %}
+{% load humanize %}
+
+{% block title %}گزارش کارکرد و عملکرد شیفت تولید - ERP حاما پارچه{% endblock %}
+{% block page_title %}ثبت کارکرد و عملکرد شیفت تولید (سرپرستان واحدها){% endblock %}
+
+{% block content %}
+<div class="fade-in-up">
+    <!-- Top Action Bar -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h4 class="fw-bold mb-1 text-gray-900">ثبت عملکرد و کارکرد شیفت تولید (سرپرستان واحدها)</h4>
+            <p class="text-muted text-xs mb-0">ثبت میزان تولید واقعی هر شیفت/دستگاه، ضایعات، زمان توقف و تحویل خودکار به انبار</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'production:production_variance' %}" class="btn-outline-custom">
+                <i data-feather="bar-chart-2"></i>
+                <span>تحلیل انحراف از تولید</span>
+            </a>
+            <a href="{% url 'production:log_create' %}" class="btn-primary-custom">
+                <i data-feather="plus"></i>
+                <span>ثبت گزارش کارکرد شیفت جدید</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- KPI Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card-custom text-center py-3">
+                <span class="text-xs text-muted d-block mb-1">مجموع تولید سالم ثبت‌شده</span>
+                <span class="font-mono fs-4 fw-bold text-success">{{ total_produced|floatformat:0|intcomma }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card-custom text-center py-3">
+                <span class="text-xs text-muted d-block mb-1">مجموع ضایعات / پرتی</span>
+                <span class="font-mono fs-4 fw-bold text-danger">{{ total_rejected|floatformat:0|intcomma }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card-custom text-center py-3">
+                <span class="text-xs text-muted d-block mb-1">مجموع زمان توقف خط (دقیقه)</span>
+                <span class="font-mono fs-4 fw-bold text-warning">{{ total_stoppage|intcomma }} دقیقه</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card-custom mb-4">
+        <form method="get" class="row g-3 align-items-center">
+            <div class="col-md-4">
+                <input type="text" name="q" value="{{ query }}" class="form-control-custom" placeholder="جستجو بر اساس کد برگه، محصول، برنامه‌ریزی، توضیحات...">
+            </div>
+            <div class="col-md-3">
+                <select name="shift" class="form-control-custom" onchange="this.form.submit();">
+                    <option value="">-- همه شیفت‌های کاری --</option>
+                    {% for key, val in shift_choices %}
+                        <option value="{{ key }}" {% if shift_filter == key %}selected{% endif %}>{{ val }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="planning" class="form-control-custom" onchange="this.form.submit();">
+                    <option value="">-- همه برنامه‌ریزی‌ها --</option>
+                    {% for p in plannings %}
+                        <option value="{{ p.id }}" {% if planning_filter == p.id|stringformat:"i" %}selected{% endif %}>{{ p.planning_code }} ({{ p.product.name }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn-primary-custom w-100">فیلتر</button>
+                <a href="{% url 'production:log_list' %}" class="btn-outline-custom">حذف</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Table -->
+    <div class="card-custom p-0 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-muted text-xs">
+                    <tr>
+                        <th class="py-3 px-3">کد برگه</th>
+                        <th class="py-3">کد برنامه / سفارش</th>
+                        <th class="py-3">محصول تولیدی</th>
+                        <th class="py-3">تاریخ و شیفت</th>
+                        <th class="py-3 text-center">اپراتور / سرپرست</th>
+                        <th class="py-3 text-center">تولید واقعی سالم</th>
+                        <th class="py-3 text-center">ضایعات</th>
+                        <th class="py-3 text-center">توقف (دقیقه)</th>
+                        <th class="py-3 text-center">وضعیت انبار</th>
+                        <th class="py-3 text-start px-3">عملیات</th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm">
+                    {% for log in page_obj %}
+                        <tr>
+                            <td class="px-3 fw-bold font-mono text-primary">
+                                <a href="{% url 'production:log_detail' log.pk %}">{{ log.log_code }}</a>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark font-mono border">{{ log.planning.planning_code }}</span>
+                                {% if log.planning.order %}
+                                    <span class="badge bg-secondary-subtle text-secondary font-mono">#{{ log.planning.order.order_code }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="fw-bold text-gray-800">
+                                {{ log.planning.product.name }}
+                            </td>
+                            <td>
+                                <div>{{ log.date_jalali }}</div>
+                                <span class="badge bg-info-subtle text-info font-sans text-xxs">{{ log.get_shift_display }}</span>
+                            </td>
+                            <td class="text-center">
+                                {% if log.operator %}
+                                    <div class="fw-semibold text-xs">{{ log.operator.first_name }} {{ log.operator.last_name }}</div>
+                                {% endif %}
+                                <div class="text-xxs text-muted">سرپرست: {{ log.supervisor.username|default:"انبار/سیستم" }}</div>
+                            </td>
+                            <td class="text-center font-mono fw-bold text-success">
+                                {{ log.produced_quantity|floatformat:0|intcomma }} {{ log.planning.product.unit }}
+                            </td>
+                            <td class="text-center font-mono fw-semibold text-danger">
+                                {% if log.rejected_quantity > 0 %}
+                                    {{ log.rejected_quantity|floatformat:0|intcomma }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td class="text-center font-mono">
+                                {% if log.stoppage_minutes > 0 %}
+                                    <span class="badge bg-warning-subtle text-warning-emphasis">{{ log.stoppage_minutes }} د</span>
+                                {% else %}
+                                    <span class="text-muted text-xs">بدون توقف</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if log.warehouse_received %}
+                                    <span class="badge bg-success-subtle text-success">تحویل به انبار شد</span>
+                                {% else %}
+                                    <span class="badge bg-secondary-subtle text-secondary">ثبت محلی</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-start px-3">
+                                <div class="d-flex align-items-center gap-1">
+                                    <a href="{% url 'production:log_detail' log.pk %}" class="btn-icon-custom" title="مشاهده">
+                                        <i data-feather="eye"></i>
+                                    </a>
+                                    <a href="{% url 'production:log_edit' log.pk %}" class="btn-icon-custom" title="ویرایش">
+                                        <i data-feather="edit-2"></i>
+                                    </a>
+                                    <a href="{% url 'production:log_delete' log.pk %}" class="btn-icon-custom text-danger" title="حذف">
+                                        <i data-feather="trash-2"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="10" class="text-center py-5 text-muted">
+                                <i data-feather="file-text" class="mb-2" style="width:36px; height:36px;"></i>
+                                <p class="mb-0">هیچ گزارش کارکرد شیفتی یافت نشد.</p>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+            <div class="p-3 border-top bg-light d-flex justify-content-between align-items-center">
+                <span class="text-xs text-muted">صفحه {{ page_obj.number }} از {{ page_obj.paginator.num_pages }}</span>
+                <ul class="pagination pagination-sm mb-0 dir-ltr">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ query }}&shift={{ shift_filter }}&planning={{ planning_filter }}">قبلی</a></li>
+                    {% endif %}
+                    <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                    {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ query }}&shift={{ shift_filter }}&planning={{ planning_filter }}">بعدی</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

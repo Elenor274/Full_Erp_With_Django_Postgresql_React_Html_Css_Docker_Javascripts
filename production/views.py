@@ -5,15 +5,28 @@ from django.db.models import Q, Sum
 from django.core.paginator import Paginator
 
 from products.models import Product
-from .models import Machine, Operator, WorkStage, Planning, MaintenanceActivity, BOM, BOMItem, QualityControl
-from .forms import MachineForm, OperatorForm, WorkStageForm, PlanningForm, MaintenanceActivityForm, BOMForm, QualityControlForm
+from .models import Machine, Operator, WorkStage, Planning, MaintenanceActivity, BOM, BOMItem, QualityControl, ProductionLog
+from .forms import MachineForm, OperatorForm, WorkStageForm, PlanningForm, MaintenanceActivityForm, BOMForm, QualityControlForm, ProductionLogForm
 
 # =====================================================================
 # برنامه‌ریزی تولید
 # =====================================================================
 
+def check_planning_permission(user):
+    if user.is_superuser:
+        return True
+    profile = getattr(user, 'userprofile', None)
+    if not profile:
+        return False
+    return profile.is_admin_user or profile.access_production or profile.access_production_planning
+
+
 @login_required
 def planning_list(request):
+    if not check_planning_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
+
     query = request.GET.get('q', '')
     status_filter = request.GET.get('status', '')
     sort = request.GET.get('sort', '-created_at')
@@ -62,12 +75,19 @@ def planning_list(request):
 
 @login_required
 def planning_detail(request, pk):
+    if not check_planning_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     plan = get_object_or_404(Planning, pk=pk)
     return render(request, 'production/planning_detail.html', {'plan': plan})
 
 
 @login_required
 def planning_create(request):
+    if not check_planning_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
+
     if request.method == 'POST':
         form = PlanningForm(request.POST)
         if form.is_valid():
@@ -95,6 +115,10 @@ def planning_create(request):
 
 @login_required
 def planning_edit(request, pk):
+    if not check_planning_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
+
     plan = get_object_or_404(Planning, pk=pk)
     old_status = plan.status
 
@@ -125,6 +149,10 @@ def planning_edit(request, pk):
 
 @login_required
 def planning_delete(request, pk):
+    if not check_planning_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
+
     plan = get_object_or_404(Planning, pk=pk)
     if request.method == 'POST':
         plan.delete()
@@ -135,9 +163,9 @@ def planning_delete(request, pk):
 
 @login_required
 def planning_deduct(request, pk):
-    """
-    متد دستی کسر موجودی انبار برای یک برنامه‌ریزی تولید خاص
-    """
+    if not check_planning_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     plan = get_object_or_404(Planning, pk=pk)
     success, msg = plan.deduct_inventory(user=request.user)
     if success:
@@ -151,14 +179,29 @@ def planning_deduct(request, pk):
 # ماشین‌آلات
 # =====================================================================
 
+def check_machine_permission(user):
+    if user.is_superuser:
+        return True
+    profile = getattr(user, 'userprofile', None)
+    if not profile:
+        return False
+    return profile.is_admin_user or profile.access_production or profile.access_production_machines
+
+
 @login_required
 def machine_list(request):
+    if not check_machine_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     machines = Machine.objects.all().order_by('machine_code')
     return render(request, 'production/machine_list.html', {'machines': machines})
 
 
 @login_required
 def machine_create(request):
+    if not check_machine_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     if request.method == 'POST':
         form = MachineForm(request.POST)
         if form.is_valid():
@@ -172,6 +215,9 @@ def machine_create(request):
 
 @login_required
 def machine_edit(request, pk):
+    if not check_machine_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     machine = get_object_or_404(Machine, pk=pk)
     if request.method == 'POST':
         form = MachineForm(request.POST, instance=machine)
@@ -186,6 +232,9 @@ def machine_edit(request, pk):
 
 @login_required
 def machine_delete(request, pk):
+    if not check_machine_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     machine = get_object_or_404(Machine, pk=pk)
     if request.method == 'POST':
         machine.delete()
@@ -198,14 +247,29 @@ def machine_delete(request, pk):
 # اپراتورها
 # =====================================================================
 
+def check_operator_permission(user):
+    if user.is_superuser:
+        return True
+    profile = getattr(user, 'userprofile', None)
+    if not profile:
+        return False
+    return profile.is_admin_user or profile.access_production or profile.access_production_operators
+
+
 @login_required
 def operator_list(request):
+    if not check_operator_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     operators = Operator.objects.all().order_by('operator_code')
     return render(request, 'production/operator_list.html', {'operators': operators})
 
 
 @login_required
 def operator_create(request):
+    if not check_operator_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     if request.method == 'POST':
         form = OperatorForm(request.POST)
         if form.is_valid():
@@ -219,6 +283,9 @@ def operator_create(request):
 
 @login_required
 def operator_edit(request, pk):
+    if not check_operator_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     operator = get_object_or_404(Operator, pk=pk)
     if request.method == 'POST':
         form = OperatorForm(request.POST, instance=operator)
@@ -233,6 +300,9 @@ def operator_edit(request, pk):
 
 @login_required
 def operator_delete(request, pk):
+    if not check_operator_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     operator = get_object_or_404(Operator, pk=pk)
     if request.method == 'POST':
         operator.delete()
@@ -245,14 +315,29 @@ def operator_delete(request, pk):
 # مراحل کاری
 # =====================================================================
 
+def check_stage_permission(user):
+    if user.is_superuser:
+        return True
+    profile = getattr(user, 'userprofile', None)
+    if not profile:
+        return False
+    return profile.is_admin_user or profile.access_production or profile.access_production_stages
+
+
 @login_required
 def stage_list(request):
+    if not check_stage_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     stages = WorkStage.objects.all().order_by('code')
     return render(request, 'production/stage_list.html', {'stages': stages})
 
 
 @login_required
 def stage_create(request):
+    if not check_stage_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     if request.method == 'POST':
         form = WorkStageForm(request.POST)
         if form.is_valid():
@@ -266,6 +351,9 @@ def stage_create(request):
 
 @login_required
 def stage_edit(request, pk):
+    if not check_stage_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     stage = get_object_or_404(WorkStage, pk=pk)
     if request.method == 'POST':
         form = WorkStageForm(request.POST, instance=stage)
@@ -280,6 +368,9 @@ def stage_edit(request, pk):
 
 @login_required
 def stage_delete(request, pk):
+    if not check_stage_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     stage = get_object_or_404(WorkStage, pk=pk)
     if request.method == 'POST':
         stage.delete()
@@ -292,8 +383,21 @@ def stage_delete(request, pk):
 # نگهداری و تعمیرات (نت)
 # =====================================================================
 
+def check_maintenance_permission(user):
+    if user.is_superuser:
+        return True
+    profile = getattr(user, 'userprofile', None)
+    if not profile:
+        return False
+    return profile.is_admin_user or profile.access_production or profile.access_production_maintenance
+
+
 @login_required
 def maintenance_list(request):
+    if not check_maintenance_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
+
     query = request.GET.get('q', '')
     repair_type_filter = request.GET.get('repair_type', '')
     dept_filter = request.GET.get('dept', '')
@@ -339,12 +443,18 @@ def maintenance_list(request):
 
 @login_required
 def maintenance_detail(request, pk):
+    if not check_maintenance_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     record = get_object_or_404(MaintenanceActivity, pk=pk)
     return render(request, 'production/maintenance_detail.html', {'record': record})
 
 
 @login_required
 def maintenance_create(request):
+    if not check_maintenance_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     if request.method == 'POST':
         form = MaintenanceActivityForm(request.POST)
         if form.is_valid():
@@ -361,6 +471,9 @@ def maintenance_create(request):
 
 @login_required
 def maintenance_edit(request, pk):
+    if not check_maintenance_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     record = get_object_or_404(MaintenanceActivity, pk=pk)
     if request.method == 'POST':
         form = MaintenanceActivityForm(request.POST, instance=record)
@@ -378,6 +491,9 @@ def maintenance_edit(request, pk):
 
 @login_required
 def maintenance_delete(request, pk):
+    if not check_maintenance_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     record = get_object_or_404(MaintenanceActivity, pk=pk)
     if request.method == 'POST':
         code = record.maintenance_code
@@ -391,8 +507,20 @@ def maintenance_delete(request, pk):
 # ساختار درخت محصول (BOM) و انفجار مواد (BOM Explosion)
 # =====================================================================
 
+def check_bom_permission(user):
+    if user.is_superuser:
+        return True
+    profile = getattr(user, 'userprofile', None)
+    if not profile:
+        return False
+    return profile.is_admin_user or profile.access_production or profile.access_production_bom
+
+
 @login_required
 def bom_list(request):
+    if not check_bom_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     query = request.GET.get('q', '')
     boms = BOM.objects.all().select_related('product').prefetch_related('items__component')
     if query:
@@ -407,12 +535,18 @@ def bom_list(request):
 
 @login_required
 def bom_detail(request, pk):
+    if not check_bom_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     bom = get_object_or_404(BOM.objects.select_related('product').prefetch_related('items__component', 'items__stage'), pk=pk)
     return render(request, 'production/bom_detail.html', {'bom': bom})
 
 
 @login_required
 def bom_create(request):
+    if not check_bom_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     if request.method == 'POST':
         form = BOMForm(request.POST)
         if form.is_valid():
@@ -451,6 +585,9 @@ def bom_create(request):
 
 @login_required
 def bom_edit(request, pk):
+    if not check_bom_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     bom = get_object_or_404(BOM, pk=pk)
     if request.method == 'POST':
         form = BOMForm(request.POST, instance=bom)
@@ -498,6 +635,9 @@ def bom_edit(request, pk):
 
 @login_required
 def bom_delete(request, pk):
+    if not check_bom_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     bom = get_object_or_404(BOM, pk=pk)
     if request.method == 'POST':
         code = bom.bom_code
@@ -510,6 +650,9 @@ def bom_delete(request, pk):
 @login_required
 def bom_explosion(request):
     """انفجار مواد اولیه (BOM Explosion / MRP)"""
+    if not check_bom_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     selected_product_id = request.GET.get('product_id', '')
     selected_order_id = request.GET.get('order_id', '')
     batch_quantity = request.GET.get('quantity', '1000')
@@ -584,8 +727,20 @@ def bom_explosion(request):
 # کنترل کیفیت (QC)
 # =====================================================================
 
+def check_qc_permission(user):
+    if user.is_superuser:
+        return True
+    profile = getattr(user, 'userprofile', None)
+    if not profile:
+        return False
+    return profile.is_admin_user or profile.access_production or profile.access_production_qc
+
+
 @login_required
 def qc_list(request):
+    if not check_qc_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     query = request.GET.get('q', '')
     type_filter = request.GET.get('type', '')
     status_filter = request.GET.get('status', '')
@@ -625,12 +780,18 @@ def qc_list(request):
 
 @login_required
 def qc_detail(request, pk):
+    if not check_qc_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     qc = get_object_or_404(QualityControl.objects.select_related('product', 'order', 'planning', 'inspector', 'warehouse'), pk=pk)
     return render(request, 'production/qc_detail.html', {'qc': qc})
 
 
 @login_required
 def qc_create(request):
+    if not check_qc_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     if request.method == 'POST':
         form = QualityControlForm(request.POST)
         if form.is_valid():
@@ -649,6 +810,9 @@ def qc_create(request):
 
 @login_required
 def qc_edit(request, pk):
+    if not check_qc_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     qc = get_object_or_404(QualityControl, pk=pk)
     if request.method == 'POST':
         form = QualityControlForm(request.POST, instance=qc)
@@ -663,6 +827,9 @@ def qc_edit(request, pk):
 
 @login_required
 def qc_delete(request, pk):
+    if not check_qc_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     qc = get_object_or_404(QualityControl, pk=pk)
     if request.method == 'POST':
         code = qc.qc_code
@@ -670,4 +837,220 @@ def qc_delete(request, pk):
         messages.success(request, f"برگه کنترل کیفیت {code} حذف شد.")
         return redirect('production:qc_list')
     return render(request, 'production/qc_confirm_delete.html', {'qc': qc})
+
+
+# =====================================================================
+# ثبت عملکرد و کارکرد شیفت تولید (سرپرستان واحدها) & انحراف از تولید
+# =====================================================================
+
+def check_execution_permission(user):
+    if user.is_superuser:
+        return True
+    profile = getattr(user, 'userprofile', None)
+    if not profile:
+        return False
+    return profile.is_admin_user or profile.access_production or profile.access_production_execution
+
+
+@login_required
+def log_list(request):
+    if not check_execution_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
+    query = request.GET.get('q', '')
+    shift_filter = request.GET.get('shift', '')
+    planning_filter = request.GET.get('planning', '')
+    page_number = request.GET.get('page', 1)
+
+    logs = ProductionLog.objects.all().select_related('planning', 'planning__product', 'operator', 'supervisor', 'warehouse')
+
+    if query:
+        logs = logs.filter(
+            Q(log_code__icontains=query) |
+            Q(planning__planning_code__icontains=query) |
+            Q(planning__product__name__icontains=query) |
+            Q(operator__last_name__icontains=query) |
+            Q(notes__icontains=query)
+        )
+
+    if shift_filter:
+        logs = logs.filter(shift=shift_filter)
+
+    if planning_filter:
+        logs = logs.filter(planning_id=planning_filter)
+
+    total_produced = logs.aggregate(s=Sum('produced_quantity'))['s'] or 0
+    total_rejected = logs.aggregate(s=Sum('rejected_quantity'))['s'] or 0
+    total_stoppage = logs.aggregate(s=Sum('stoppage_minutes'))['s'] or 0
+
+    paginator = Paginator(logs, 12)
+    page_obj = paginator.get_page(page_number)
+
+    plannings = Planning.objects.exclude(status='completed').select_related('product')
+
+    return render(request, 'production/log_list.html', {
+        'page_obj': page_obj,
+        'query': query,
+        'shift_filter': shift_filter,
+        'planning_filter': planning_filter,
+        'total_produced': total_produced,
+        'total_rejected': total_rejected,
+        'total_stoppage': total_stoppage,
+        'shift_choices': ProductionLog.SHIFT_CHOICES,
+        'plannings': plannings,
+    })
+
+
+@login_required
+def log_create(request):
+    if not check_execution_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
+    initial_data = {}
+    planning_id = request.GET.get('planning_id')
+    if planning_id:
+        initial_data['planning'] = planning_id
+
+    if request.method == 'POST':
+        form = ProductionLogForm(request.POST)
+        if form.is_valid():
+            log = form.save(commit=False)
+            if not log.supervisor:
+                log.supervisor = request.user
+            log.save()
+
+            # کسر و رسید انبار و به‌روزرسانی برنامه‌ریزی
+            success, msg = log.process_warehouse_transactions(user=request.user)
+            messages.success(request, f"گزارش عملکرد تولید {log.log_code} ثبت شد. {msg}")
+            return redirect('production:log_list')
+        else:
+            messages.error(request, "لطفاً خطاهای فرم را برطرف نمایید.")
+    else:
+        form = ProductionLogForm(initial=initial_data)
+
+    return render(request, 'production/log_create.html', {'form': form})
+
+
+@login_required
+def log_detail(request, pk):
+    if not check_execution_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
+    log = get_object_or_404(ProductionLog.objects.select_related('planning', 'planning__product', 'operator', 'supervisor', 'warehouse'), pk=pk)
+    return render(request, 'production/log_detail.html', {'log': log})
+
+
+@login_required
+def log_edit(request, pk):
+    if not check_execution_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
+    log = get_object_or_404(ProductionLog, pk=pk)
+    if request.method == 'POST':
+        form = ProductionLogForm(request.POST, instance=log)
+        if form.is_valid():
+            updated_log = form.save()
+            success, msg = updated_log.process_warehouse_transactions(user=request.user)
+            messages.success(request, f"گزارش عملکرد {updated_log.log_code} ویرایش و انبار به‌روزرسانی شد. {msg}")
+            return redirect('production:log_list')
+    else:
+        form = ProductionLogForm(instance=log)
+
+    return render(request, 'production/log_edit.html', {'form': form, 'log': log})
+
+
+@login_required
+def log_delete(request, pk):
+    if not check_execution_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
+    log = get_object_or_404(ProductionLog, pk=pk)
+    if request.method == 'POST':
+        code = log.log_code
+        planning = log.planning
+        log.delete()
+        # Recalculate planning total
+        total_produced = ProductionLog.objects.filter(planning=planning).aggregate(s=Sum('produced_quantity'))['s'] or 0
+        planning.produced_quantity = total_produced
+        planning.save()
+        messages.success(request, f"گزارش عملکرد {code} حذف گردید.")
+        return redirect('production:log_list')
+
+    return render(request, 'production/log_confirm_delete.html', {'log': log})
+
+
+@login_required
+def production_variance(request):
+    user = request.user
+    if not user.is_superuser:
+        profile = getattr(user, 'userprofile', None)
+        if not profile or not (profile.is_admin_user or profile.access_production or profile.access_production_planning or profile.access_production_execution or profile.access_reports):
+            messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+            return redirect('core:dashboard')
+    query = request.GET.get('q', '')
+    status_filter = request.GET.get('status', '')
+
+    plans = Planning.objects.all().select_related('order', 'product', 'machine', 'operator', 'stage')
+
+    if query:
+        plans = plans.filter(
+            Q(planning_code__icontains=query) |
+            Q(product__name__icontains=query) |
+            Q(order__order_code__icontains=query)
+        )
+
+    if status_filter:
+        plans = plans.filter(status=status_filter)
+
+    plan_variances = []
+    total_target_sum = 0
+    total_produced_sum = 0
+    total_scrap_sum = 0
+    total_stoppage_sum = 0
+
+    for plan in plans:
+        logs = plan.execution_logs.all()
+        logged_produced = logs.aggregate(s=Sum('produced_quantity'))['s'] or 0
+        logged_scrap = logs.aggregate(s=Sum('rejected_quantity'))['s'] or 0
+        logged_stoppage = logs.aggregate(s=Sum('stoppage_minutes'))['s'] or 0
+
+        target = float(plan.target_quantity or 0)
+        actual = float(logged_produced)
+        variance = target - actual
+        variance_pct = round((variance / target) * 100, 1) if target > 0 else 0
+        progress_pct = min(round((actual / target) * 100, 1), 100) if target > 0 else 0
+
+        total_target_sum += target
+        total_produced_sum += actual
+        total_scrap_sum += float(logged_scrap)
+        total_stoppage_sum += logged_stoppage
+
+        plan_variances.append({
+            'plan': plan,
+            'logged_produced': actual,
+            'logged_scrap': logged_scrap,
+            'stoppage_minutes': logged_stoppage,
+            'stoppage_hours': round(logged_stoppage / 60.0, 1),
+            'variance': round(variance, 2),
+            'variance_pct': variance_pct,
+            'progress_pct': progress_pct,
+            'logs_count': logs.count(),
+        })
+
+    overall_variance = total_target_sum - total_produced_sum
+    overall_progress = round((total_produced_sum / total_target_sum) * 100, 1) if total_target_sum > 0 else 0
+
+    return render(request, 'production/variance_report.html', {
+        'plan_variances': plan_variances,
+        'query': query,
+        'status_filter': status_filter,
+        'status_choices': Planning.STATUS_CHOICES,
+        'total_target_sum': total_target_sum,
+        'total_produced_sum': total_produced_sum,
+        'total_scrap_sum': total_scrap_sum,
+        'total_stoppage_hours': round(total_stoppage_sum / 60.0, 1),
+        'overall_variance': overall_variance,
+        'overall_progress': overall_progress,
+    })
+
 

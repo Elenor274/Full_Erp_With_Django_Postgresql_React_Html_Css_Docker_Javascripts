@@ -8,12 +8,12 @@ def admin_required(view_func):
         if request.user.is_superuser:
             return view_func(request, *args, **kwargs)
         try:
-            profile = request.user.userprofile
-            if profile.is_admin_user:
+            profile = getattr(request.user, 'userprofile', None)
+            if profile and profile.is_admin_user:
                 return view_func(request, *args, **kwargs)
         except Exception:
             pass
-        messages.error(request, "شما دسترسی لازم برای مدیریت کاربران را ندارید.")
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
         return redirect('core:dashboard')
     return _wrapped_view
 
@@ -25,12 +25,17 @@ def permission_required_custom(permission_name):
             if request.user.is_superuser:
                 return view_func(request, *args, **kwargs)
             try:
-                profile = request.user.userprofile
-                if profile.is_admin_user or getattr(profile, permission_name, False):
-                    return view_func(request, *args, **kwargs)
+                profile = getattr(request.user, 'userprofile', None)
+                if profile:
+                    if profile.is_admin_user:
+                        return view_func(request, *args, **kwargs)
+                    if permission_name.startswith('access_production_') and profile.access_production:
+                        return view_func(request, *args, **kwargs)
+                    if getattr(profile, permission_name, False):
+                        return view_func(request, *args, **kwargs)
             except Exception:
                 pass
-            messages.error(request, "شما دسترسی لازم برای مشاهده این بخش را ندارید.")
+            messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
             return redirect('core:dashboard')
         return _wrapped_view
     return decorator

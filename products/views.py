@@ -11,11 +11,25 @@ from orders.models import OrderItem, Order
 from production.models import Planning, QualityControl
 
 
+from django.contrib import messages
+
+def check_product_permission(user):
+    if user.is_superuser:
+        return True
+    profile = getattr(user, 'userprofile', None)
+    if not profile:
+        return False
+    return profile.is_admin_user or profile.access_products
+
 # -----------------------------
 # لیست کالاها
 # -----------------------------
 @login_required
 def product_list(request):
+    if not check_product_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect("core:dashboard")
+
     query = request.GET.get("q", "")
     group_filter = request.GET.get("group", "")
     sort = request.GET.get("sort", "code")
@@ -77,6 +91,9 @@ def product_list(request):
 # -----------------------------
 @login_required
 def product_trace(request):
+    if not check_product_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect("core:dashboard")
     code = request.GET.get("code", "").strip() or request.GET.get("q", "").strip()
     if not code:
         return redirect("products:product_list")
@@ -93,6 +110,9 @@ def product_trace(request):
 # -----------------------------
 @login_required
 def product_detail(request, pk):
+    if not check_product_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect("core:dashboard")
     product = get_object_or_404(Product, pk=pk)
 
     stock_items = StockItem.objects.filter(product=product).select_related('warehouse')
@@ -122,11 +142,24 @@ def product_detail(request, pk):
     })
 
 
+from django.contrib import messages
+
+def check_product_permission(user):
+    if user.is_superuser:
+        return True
+    profile = getattr(user, 'userprofile', None)
+    if not profile:
+        return False
+    return profile.is_admin_user or profile.access_products
+
 # -----------------------------
 # ایجاد کالا
 # -----------------------------
 @login_required
 def product_create(request):
+    if not check_product_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect("core:dashboard")
     if request.method == "POST":
         form = ProductForm(request.POST)
         if form.is_valid():
@@ -145,6 +178,9 @@ def product_create(request):
 # -----------------------------
 @login_required
 def product_edit(request, pk):
+    if not check_product_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect("core:dashboard")
     product = get_object_or_404(Product, pk=pk)
 
     if request.method == "POST":
@@ -165,12 +201,18 @@ def product_edit(request, pk):
 # -----------------------------
 @login_required
 def product_delete_confirm(request, pk):
+    if not check_product_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect("core:dashboard")
     product = get_object_or_404(Product, pk=pk)
     return render(request, "products/product_delete_confirm.html", {"product": product})
 
 
 @login_required
 def product_delete(request, pk):
+    if not check_product_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect("core:dashboard")
     product = get_object_or_404(Product, pk=pk)
     product.delete()
     return redirect("products:product_list")
@@ -181,12 +223,18 @@ def product_delete(request, pk):
 # -----------------------------
 @login_required
 def group_list(request):
+    if not check_product_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect("core:dashboard")
     groups = ProductGroup.objects.all()
     return render(request, "products/group_list.html", {"groups": groups})
 
 
 @login_required
 def group_create(request):
+    if not check_product_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect("core:dashboard")
     if request.method == "POST":
         form = ProductGroupForm(request.POST)
         if form.is_valid():
@@ -200,6 +248,9 @@ def group_create(request):
 
 @login_required
 def group_edit(request, pk):
+    if not check_product_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect("core:dashboard")
     group = get_object_or_404(ProductGroup, pk=pk)
 
     if request.method == "POST":
@@ -215,6 +266,9 @@ def group_edit(request, pk):
 
 @login_required
 def group_delete(request, pk):
+    if not check_product_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect("core:dashboard")
     group = get_object_or_404(ProductGroup, pk=pk)
     group.delete()
     return redirect("products:group_list")

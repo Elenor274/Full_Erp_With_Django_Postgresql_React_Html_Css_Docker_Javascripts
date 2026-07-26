@@ -133,6 +133,7 @@
             </div>
             
             <div class="row g-3">
+                {% if user.is_superuser or user.userprofile.access_warehouse %}
                 <!-- ورود به انبار (اولین گزینه سمت راست در راستای RTL) -->
                 <div class="col-md-6 col-lg-6">
                     <a href="{% url 'warehouse:stock_in' warehouse.id %}" class="action-card-link text-decoration-none">
@@ -172,6 +173,7 @@
                         </div>
                     </a>
                 </div>
+                {% endif %}
 
                 <!-- دکمه ناوبری سریع به موجودی‌ها در داشبورد -->
                 <div class="col-md-6 col-lg-6">
@@ -263,6 +265,7 @@
                                     {% endif %}
                                 </td>
                                 <td class="pe-4 text-center">
+                                    {% if user.is_superuser or user.userprofile.access_warehouse %}
                                     <div class="d-flex justify-content-center gap-1.5">
                                         <a href="{% url 'warehouse:stock_in' warehouse.id %}?product_id={{ item.product.id }}" class="btn btn-xs btn-success d-inline-flex align-items-center gap-1 text-xxs py-1 px-2.5 rounded-2 border-0 text-white" style="background: #10b981;">
                                             <i data-feather="plus" style="width: 12px; height: 12px;"></i> ورود کالا
@@ -271,6 +274,9 @@
                                             <i data-feather="minus" style="width: 12px; height: 12px;"></i> خروج کالا
                                         </a>
                                     </div>
+                                    {% else %}
+                                    <span class="text-muted text-xxs">فقط مشاهده</span>
+                                    {% endif %}
                                 </td>
                             </tr>
                             {% empty %}

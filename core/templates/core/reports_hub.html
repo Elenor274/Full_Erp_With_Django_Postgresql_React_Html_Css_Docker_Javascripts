@@ -438,6 +438,10 @@
   
   <!-- Navigation Header Tabs -->
   <div class="reports-tabs">
+    <a href="{% url 'production:production_variance' %}" class="reports-tab-link {% if current_tab == 'variance' %}active{% endif %}">
+      <i data-feather="bar-chart-2"></i>
+      <span>تحلیل انحراف از تولید</span>
+    </a>
     <a href="?tab=tracking&q={{ query }}" class="reports-tab-link {% if current_tab == 'tracking' %}active{% endif %}">
       <i data-feather="search"></i>
       <span>رهگیری هوشمند سفارش</span>

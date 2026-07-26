@@ -1,11 +1,11 @@
 {% load static %}
 
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>ورود به سیستم</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ورود به سامانه یکپارچه ERP | حاما پارچه</title>
     <link rel="stylesheet" href="{% static 'css/login.css' %}">
 </head>
 
@@ -15,33 +15,62 @@
 
     <div class="login-box">
         <div class="brand-wrapper">
+            <div class="brand-logo-icon">🧵</div>
             <h1 class="brand-title">حاما <span>پارچه</span></h1>
-            <p class="brand-subtitle">سامانه یکپارچه مدیریت کارخانجات پارچه</p>
+            <p class="brand-subtitle">سامانه هوشمند مدیریت کارخانجات و زنجیره تامین نساجی</p>
         </div>
+
         <h2 class="title">ورود به حساب کاربری</h2>
+
+        {% if form.errors or form.non_field_errors %}
+            <div class="alert-error">
+                {% if form.non_field_errors %}
+                    {% for err in form.non_field_errors %}
+                        <div>{{ err }}</div>
+                    {% endfor %}
+                {% else %}
+                    <div>نام کاربری یا رمز عبور وارد شده اشتباه است. لطفا مجددا تلاش کنید.</div>
+                {% endif %}
+            </div>
+        {% endif %}
 
         <form method="post" autocomplete="off">
             {% csrf_token %}
 
             <div class="form-group">
-                {{ form.username.label_tag }}
-                {{ form.username }}
+                <label for="id_username">نام کاربری</label>
+                <div class="input-wrapper">
+                    <input type="text" name="username" id="id_username" class="form-input" placeholder="نام کاربری خود را وارد کنید" required autofocus autocomplete="off">
+                </div>
+                {% if form.username.errors %}
+                    <div class="field-error">{{ form.username.errors.0 }}</div>
+                {% endif %}
             </div>
 
             <div class="form-group">
-                {{ form.password.label_tag }}
-                {{ form.password }}
+                <label for="id_password">رمز عبور</label>
+                <div class="input-wrapper">
+                    <input type="password" name="password" id="id_password" class="form-input" placeholder="••••••••" required autocomplete="off">
+                </div>
+                {% if form.password.errors %}
+                    <div class="field-error">{{ form.password.errors.0 }}</div>
+                {% endif %}
             </div>
 
-            <button type="submit" class="btn-login">ورود</button>
+            <button type="submit" class="btn-login">
+                <span>ورود به سامانه</span>
+            </button>
         </form>
+
+        <div class="login-footer">
+            <span class="footer-hint">پشتیبانی و ثبت‌نام کاربران جدید توسط مدیر سیستم انجام می‌شود.</span>
+        </div>
     </div>
 
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Disable autocomplete on the form and all its input fields
         document.querySelectorAll('form').forEach(form => form.setAttribute('autocomplete', 'off'));
         document.querySelectorAll('input').forEach(input => input.setAttribute('autocomplete', 'off'));
     });

@@ -16,12 +16,17 @@ from production.models import Machine, Operator, WorkStage, Planning
 def seed_database():
     print("Seeding database...")
 
-    # 1. Create Superuser
-    if not User.objects.filter(username='admin').exists():
-        User.objects.create_superuser('admin', 'admin@example.com', 'admin1234', first_name='مدیر', last_name='سیستم')
+    # 1. Create or Update Superuser
+    user, created = User.objects.get_or_create(username='admin', defaults={'email': 'admin@example.com', 'first_name': 'مدیر', 'last_name': 'سیستم'})
+    user.set_password('admin1234')
+    user.is_superuser = True
+    user.is_staff = True
+    user.is_active = True
+    user.save()
+    if created:
         print("Created superuser: admin / admin1234")
     else:
-        print("Superuser already exists.")
+        print("Updated superuser: admin / admin1234")
 
     # 2. Create Warehouses
     wh_raw, _ = Warehouse.objects.get_or_create(

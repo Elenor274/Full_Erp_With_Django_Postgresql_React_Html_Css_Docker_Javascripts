@@ -51,4 +51,14 @@ urlpatterns = [
     path('qc/<int:pk>/', views.qc_detail, name='qc_detail'),
     path('qc/<int:pk>/edit/', views.qc_edit, name='qc_edit'),
     path('qc/<int:pk>/delete/', views.qc_delete, name='qc_delete'),
+
+    # ثبت عملکرد / گزارش کارکرد شیفت تولید (سرپرستان واحدها)
+    path('logs/', views.log_list, name='log_list'),
+    path('logs/create/', views.log_create, name='log_create'),
+    path('logs/<int:pk>/', views.log_detail, name='log_detail'),
+    path('logs/<int:pk>/edit/', views.log_edit, name='log_edit'),
+    path('logs/<int:pk>/delete/', views.log_delete, name='log_delete'),
+
+    # تحلیل و گزارش انحراف از تولید
+    path('variance/', views.production_variance, name='production_variance'),
 ]

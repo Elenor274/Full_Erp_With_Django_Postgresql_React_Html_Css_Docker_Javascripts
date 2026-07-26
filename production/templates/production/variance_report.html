@@ -1,0 +1,176 @@
+{% extends "core/base.html" %}
+{% load humanize %}
+
+{% block title %}گزارش تحلیل انحراف از تولید - ERP حاما پارچه{% endblock %}
+{% block page_title %}گزارش تحلیل و مغایرت انحراف از برنامه‌ریزی تولید{% endblock %}
+
+{% block content %}
+<div class="fade-in-up">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h4 class="fw-bold mb-1 text-gray-900">تحلیل و گزارش انحراف از تولید (Variance Analysis)</h4>
+            <p class="text-muted text-xs mb-0">مقایسه دقیق مقدار برنامه‌ریزی شده (توسط برنامه‌ریزی تولید) با مقدار تولید شده واقعی (ثبت شده توسط سرپرستان واحدها)</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'production:log_list' %}" class="btn-primary-custom">
+                <i data-feather="clipboard"></i>
+                <span>ثبت و مشاهده عملکرد تولید</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Overall KPI Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card-custom text-center py-3">
+                <span class="text-xs text-muted d-block mb-1">کل هدف برنامه‌ریزی شده</span>
+                <span class="font-mono fs-4 fw-bold text-dark">{{ total_target_sum|floatformat:0|intcomma }}</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-custom text-center py-3">
+                <span class="text-xs text-muted d-block mb-1">کل تولید واقعی سالم</span>
+                <span class="font-mono fs-4 fw-bold text-success">{{ total_produced_sum|floatformat:0|intcomma }}</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-custom text-center py-3">
+                <span class="text-xs text-muted d-block mb-1">انحراف کسر تولید (باقیمانده)</span>
+                <span class="font-mono fs-4 fw-bold {% if overall_variance > 0 %}text-danger{% else %}text-success{% endif %}">
+                    {{ overall_variance|floatformat:0|intcomma }}
+                </span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-custom text-center py-3">
+                <span class="text-xs text-muted d-block mb-1">درصد کل تحقق برنامه</span>
+                <span class="font-mono fs-4 fw-bold text-primary">{{ overall_progress }}%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter -->
+    <div class="card-custom mb-4">
+        <form method="get" class="row g-3 align-items-center">
+            <div class="col-md-5">
+                <input type="text" name="q" value="{{ query }}" class="form-control-custom" placeholder="جستجو کد برنامه‌ریزی، محصول، سفارش...">
+            </div>
+            <div class="col-md-4">
+                <select name="status" class="form-control-custom" onchange="this.form.submit();">
+                    <option value="">-- همه وضعیت‌های برنامه --</option>
+                    {% for key, val in status_choices %}
+                        <option value="{{ key }}" {% if status_filter == key %}selected{% endif %}>{{ val }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn-primary-custom w-100">فیلتر</button>
+                <a href="{% url 'production:production_variance' %}" class="btn-outline-custom">حذف</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Variance Table -->
+    <div class="card-custom p-0 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-muted text-xs">
+                    <tr>
+                        <th class="py-3 px-3">کد برنامه‌ریزی</th>
+                        <th class="py-3">محصول / سفارش</th>
+                        <th class="py-3">واحد / دستگاه / اپراتور</th>
+                        <th class="py-3 text-center">هدف برنامه (Target)</th>
+                        <th class="py-3 text-center">تولید واقعی سرپرست (Actual)</th>
+                        <th class="py-3 text-center">انحراف تولید (Variance)</th>
+                        <th class="py-3 text-center">ضایعات</th>
+                        <th class="py-3 text-center">توقف (ساعت)</th>
+                        <th class="py-3 text-center" style="width: 160px;">درصد تحقق</th>
+                        <th class="py-3 text-start px-3">عملیات</th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm">
+                    {% for item in plan_variances %}
+                        <tr>
+                            <td class="px-3 fw-bold font-mono text-primary">
+                                {% if user.is_superuser or user.userprofile.access_production_planning %}
+                                    <a href="{% url 'production:planning_detail' item.plan.pk %}">{{ item.plan.planning_code }}</a>
+                                {% else %}
+                                    <span>{{ item.plan.planning_code }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="fw-bold text-gray-800">{{ item.plan.product.name }}</div>
+                                {% if item.plan.order %}
+                                    <span class="text-xxs text-muted font-mono">سفارش #{{ item.plan.order.order_code }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="text-xs fw-semibold">{{ item.plan.stage.name }}</div>
+                                <div class="text-xxs text-muted">{{ item.plan.machine.name }}</div>
+                            </td>
+                            <td class="text-center font-mono fw-bold text-dark">
+                                {{ item.plan.target_quantity|floatformat:0|intcomma }} {{ item.plan.product.unit }}
+                            </td>
+                            <td class="text-center font-mono fw-bold text-success">
+                                {{ item.logged_produced|floatformat:0|intcomma }} {{ item.plan.product.unit }}
+                                <div class="text-xxs text-muted font-sans">({{ item.logs_count }} برگه شیفت)</div>
+                            </td>
+                            <td class="text-center font-mono fw-bold">
+                                {% if item.variance > 0 %}
+                                    <span class="text-danger">-{{ item.variance|floatformat:0|intcomma }}</span>
+                                    <div class="text-xxs text-danger">({{ item.variance_pct }}% عقب ماندگی)</div>
+                                {% elif item.variance == 0 %}
+                                    <span class="text-success">طابق برنامه</span>
+                                {% else %}
+                                    <span class="text-success">+{% widthratio item.variance 1 -1 %}</span>
+                                    <div class="text-xxs text-success">(مازاد تولید)</div>
+                                {% endif %}
+                            </td>
+                            <td class="text-center font-mono text-danger fw-semibold">
+                                {% if item.logged_scrap > 0 %}
+                                    {{ item.logged_scrap|floatformat:0|intcomma }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td class="text-center font-mono">
+                                {% if item.stoppage_hours > 0 %}
+                                    <span class="badge bg-warning-subtle text-warning-emphasis">{{ item.stoppage_hours }} ساعت</span>
+                                {% else %}
+                                    <span class="text-muted text-xs">۰</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center px-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="progress flex-grow-1" style="height: 8px;">
+                                        <div class="progress-bar {% if item.progress_pct >= 100 %}bg-success{% elif item.progress_pct >= 50 %}bg-info{% else %}bg-warning{% endif %}" 
+                                             role="progressbar" 
+                                             style="width: {{ item.progress_pct }}%;" 
+                                             aria-valuenow="{{ item.progress_pct }}" aria-valuemin="0" aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                    <span class="font-mono text-xxs fw-bold text-dark">{{ item.progress_pct }}%</span>
+                                </div>
+                            </td>
+                            <td class="text-start px-3">
+                                <a href="{% url 'production:log_create' %}?planning_id={{ item.plan.id }}" class="btn-primary-custom py-1 px-2 text-xxs" title="ثبت کارکرد جدید">
+                                    <i data-feather="plus" style="width:14px;"></i>
+                                    <span>ثبت کارکرد</span>
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="10" class="text-center py-5 text-muted">
+                                <i data-feather="pie-chart" class="mb-2" style="width:36px; height:36px;"></i>
+                                <p class="mb-0">هیچ برنامه‌ریزی برای محاسبه انحراف از تولید یافت نشد.</p>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

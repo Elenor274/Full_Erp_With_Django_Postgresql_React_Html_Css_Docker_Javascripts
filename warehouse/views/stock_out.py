@@ -5,8 +5,20 @@ from warehouse.models import Warehouse, StockItem, StockTransaction
 from warehouse.forms import StockOutForm
 
 
+def check_warehouse_permission(user):
+    if user.is_superuser:
+        return True
+    profile = getattr(user, 'userprofile', None)
+    if not profile:
+        return False
+    return profile.is_admin_user or profile.access_warehouse
+
 @login_required
 def stock_out(request, pk):
+    if not check_warehouse_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect("core:dashboard")
+
     warehouse = get_object_or_404(Warehouse, pk=pk)
 
     # اگر درخواست POST بود → عملیات خروج انجام شود

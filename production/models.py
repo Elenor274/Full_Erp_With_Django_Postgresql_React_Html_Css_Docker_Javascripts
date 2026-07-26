@@ -512,3 +512,161 @@ class QualityControl(models.Model):
         return 0.0
 
 
+class ProductionLog(models.Model):
+    SHIFT_CHOICES = [
+        ('shift_1', 'شیفت اول (روز)'),
+        ('shift_2', 'شیفت دوم (عصر)'),
+        ('shift_3', 'شیفت سوم (شب)'),
+        ('general', 'شیفت عمومی / روزانه'),
+    ]
+
+    log_code = models.CharField(max_length=50, unique=True, verbose_name="کد برگه ثبت عملکرد")
+    planning = models.ForeignKey(Planning, on_delete=models.CASCADE, related_name='execution_logs', verbose_name="برنامه‌ریزی تولید مرتبط")
+    date = models.DateField(verbose_name="تاریخ تولید / ثبت کارکرد")
+    shift = models.CharField(max_length=20, choices=SHIFT_CHOICES, default='shift_1', verbose_name="شیفت کاری")
+    
+    operator = models.ForeignKey(Operator, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="اپراتور مسئول")
+    supervisor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="سرپرست ثبت‌کننده")
+    
+    produced_quantity = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="مقدار تولید واقعی (سالم)")
+    rejected_quantity = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name="مقدار ضایعات / پرتی")
+    stoppage_minutes = models.PositiveIntegerField(default=0, verbose_name="زمان توقف خط (دقیقه)")
+    stoppage_reason = models.TextField(blank=True, null=True, verbose_name="علت توقف خط / توضیحات مشکلات")
+    
+    # تحویل و رسید انبار
+    receive_to_warehouse = models.BooleanField(default=True, verbose_name="ارسال و رسید خودکار به انبار")
+    warehouse = models.ForeignKey(Warehouse, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="انبار تحویل‌گیرنده محصول")
+    warehouse_received = models.BooleanField(default=False, verbose_name="آیا تحویل انبار ثبت شد؟")
+    
+    # کسر مواد اولیه
+    deduct_raw_material = models.BooleanField(default=True, verbose_name="کسر خودکار مواد اولیه از انبار")
+    raw_material_deducted = models.BooleanField(default=False, verbose_name="آیا مواد کسر شد؟")
+    
+    notes = models.TextField(blank=True, null=True, verbose_name="ملاحظات سرپرست واحد")
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "گزارش عملکرد تولید (سرپرست واحد)"
+        verbose_name_plural = "گزارش‌های عملکرد تولید (سرپرستان واحدها)"
+        ordering = ['-date', '-created_at']
+
+    def __str__(self):
+        return f"{self.log_code} - {self.planning.product.name} ({self.date_jalali})"
+
+    @property
+    def date_jalali(self):
+        if not self.date:
+            return ""
+        import jdatetime
+        try:
+            return jdatetime.date.fromgregorian(date=self.date).strftime("%Y/%m/%d")
+        except Exception:
+            return ""
+
+    def save(self, *args, **kwargs):
+        if not self.log_code:
+            import jdatetime
+            try:
+                year = jdatetime.date.today().year
+            except Exception:
+                year = 1405
+            last_record = ProductionLog.objects.all().order_by('id').last()
+            last_id = last_record.id if last_record else 0
+            self.log_code = f"PRD-LOG-{year}-{last_id + 1:04d}"
+        super().save(*args, **kwargs)
+
+    def process_warehouse_transactions(self, user=None):
+        """
+        عملیات رسید محصول به انبار و کسر مواد اولیه متناظر با تولید ثبت‌شده در این شیفت
+        """
+        messages_list = []
+        
+        # ۱. رسید محصول تولید شده به انبار
+        if self.receive_to_warehouse and not self.warehouse_received and self.produced_quantity > 0:
+            target_wh = self.warehouse
+            if not target_wh:
+                target_wh = Warehouse.objects.filter(warehouse_type='finished_goods').first() or Warehouse.objects.first()
+            
+            if target_wh:
+                try:
+                    with transaction.atomic():
+                        stock_item, _ = StockItem.objects.select_for_update().get_or_create(
+                            warehouse=target_wh,
+                            product=self.planning.product,
+                            defaults={'quantity': 0}
+                        )
+                        stock_item.quantity += self.produced_quantity
+                        stock_item.save()
+
+                        StockTransaction.objects.create(
+                            warehouse=target_wh,
+                            product=self.planning.product,
+                            type=StockTransaction.IN,
+                            quantity=self.produced_quantity,
+                            unit=self.planning.product.unit,
+                            transaction_category='production',
+                            reference=f"رسید شیفت تولید {self.log_code} (کد برنامه {self.planning.planning_code})",
+                            user=user or self.supervisor,
+                        )
+                        self.warehouse_received = True
+                        messages_list.append(f"مقدار {self.produced_quantity} {self.planning.product.unit} به انبار «{target_wh.name}» تحویل گردید.")
+                except Exception as e:
+                    messages_list.append(f"خطا در تحویل به انبار: {str(e)}")
+
+        # ۲. کسر متناسب مواد اولیه از انبار مبدا
+        if self.deduct_raw_material and not self.raw_material_deducted and self.produced_quantity > 0:
+            raw_mat = self.planning.raw_material
+            raw_wh = self.planning.warehouse
+            target_qty = self.planning.target_quantity
+            planned_raw_qty = self.planning.raw_material_qty
+
+            if raw_mat and raw_wh and target_qty > 0 and planned_raw_qty > 0:
+                from decimal import Decimal
+                actual_raw_used = (self.produced_quantity / target_qty) * planned_raw_qty
+                try:
+                    with transaction.atomic():
+                        stock_item, _ = StockItem.objects.select_for_update().get_or_create(
+                            warehouse=raw_wh,
+                            product=raw_mat,
+                            defaults={'quantity': 0}
+                        )
+                        stock_item.quantity -= actual_raw_used
+                        stock_item.save()
+
+                        StockTransaction.objects.create(
+                            warehouse=raw_wh,
+                            product=raw_mat,
+                            type=StockTransaction.OUT,
+                            quantity=actual_raw_used,
+                            unit=raw_mat.unit,
+                            transaction_category='production',
+                            reference=f"مصرف شیفت تولید {self.log_code} (برنامه {self.planning.planning_code})",
+                            user=user or self.supervisor,
+                        )
+                        self.raw_material_deducted = True
+                        messages_list.append(f"مقدار {actual_raw_used:.2f} {raw_mat.unit} {raw_mat.name} از انبار «{raw_wh.name}» کسر گردید.")
+                except Exception as e:
+                    messages_list.append(f"خطا در کسر مواد اولیه: {str(e)}")
+
+        self.save()
+
+        # ۳. بروزرسانی مقدار کل تولید شده در Planning
+        total_produced = ProductionLog.objects.filter(planning=self.planning).aggregate(s=models.Sum('produced_quantity'))['s'] or 0
+        self.planning.produced_quantity = total_produced
+        if total_produced >= self.planning.target_quantity and self.planning.status != 'completed':
+            self.planning.status = 'completed'
+            if self.planning.order:
+                all_plans = Planning.objects.filter(order=self.planning.order)
+                if all_plans.exists() and all(p.status == 'completed' for p in all_plans):
+                    self.planning.order.status = 'warehouse'
+                    self.planning.order.save()
+                    messages_list.append(f"سفارش #{self.planning.order.order_code} تکمیل شد.")
+        elif total_produced > 0 and self.planning.status == 'pending':
+            self.planning.status = 'producing'
+        self.planning.save()
+
+        return True, " / ".join(messages_list) if messages_list else "عملکرد با موفقیت ثبت شد."
+
+

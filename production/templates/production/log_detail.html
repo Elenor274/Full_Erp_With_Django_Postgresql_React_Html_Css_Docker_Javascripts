@@ -1,0 +1,145 @@
+{% extends "core/base.html" %}
+{% load humanize %}
+
+{% block title %}جزئیات برگه کارکرد {{ log.log_code }} - ERP حاما پارچه{% endblock %}
+{% block page_title %}جزئیات برگه عملکرد شیفت تولید{% endblock %}
+
+{% block content %}
+<div class="fade-in-up max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <h4 class="fw-bold mb-0 text-gray-900">برگه شیفت {{ log.log_code }}</h4>
+                <span class="badge bg-primary-subtle text-primary font-sans">{{ log.get_shift_display }}</span>
+            </div>
+            <p class="text-muted text-xs mb-0">تاریخ ثبت: {{ log.date_jalali }} | ثبت‌کننده: {{ log.supervisor.username|default:"انبار/سیستم" }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'production:log_edit' log.pk %}" class="btn-outline-custom">
+                <i data-feather="edit-2"></i>
+                <span>ویرایش</span>
+            </a>
+            <a href="{% url 'production:log_list' %}" class="btn-primary-custom">
+                <i data-feather="arrow-right"></i>
+                <span>لیست گزارش‌ها</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Card -->
+    <div class="card-custom mb-4">
+        <h5 class="fw-bold text-dark border-bottom pb-3 mb-3">اطلاعات برنامه‌ریزی و محصول</h5>
+        <div class="row g-3 text-sm">
+            <div class="col-md-4">
+                <span class="text-muted text-xs d-block">کد برنامه‌ریزی:</span>
+                <span class="fw-bold font-mono text-primary fs-6">{{ log.planning.planning_code }}</span>
+            </div>
+            <div class="col-md-4">
+                <span class="text-muted text-xs d-block">محصول تولیدی:</span>
+                <span class="fw-bold text-gray-800 fs-6">{{ log.planning.product.name }}</span>
+            </div>
+            <div class="col-md-4">
+                <span class="text-muted text-xs d-block">سفارش مرتبط:</span>
+                {% if log.planning.order %}
+                    <span class="fw-bold text-dark">سفارش #{{ log.planning.order.order_code }} - {{ log.planning.order.customer.name }}</span>
+                {% else %}
+                    <span class="text-muted">بدون سفارش</span>
+                {% endif %}
+            </div>
+            <div class="col-md-4">
+                <span class="text-muted text-xs d-block">ماشین‌آلات:</span>
+                <span class="fw-semibold">{{ log.planning.machine.name }} ({{ log.planning.machine.machine_code }})</span>
+            </div>
+            <div class="col-md-4">
+                <span class="text-muted text-xs d-block">مرحله تولید:</span>
+                <span class="fw-semibold">{{ log.planning.stage.name }}</span>
+            </div>
+            <div class="col-md-4">
+                <span class="text-muted text-xs d-block">اپراتور مسئول شیفت:</span>
+                <span class="fw-semibold">{% if log.operator %}{{ log.operator.first_name }} {{ log.operator.last_name }}{% else %}-{% endif %}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Card -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card-custom text-center py-3 bg-success-subtle border-success">
+                <span class="text-xs text-success d-block mb-1 fw-bold">تولید سالم در این شیفت</span>
+                <span class="font-mono fs-3 fw-bold text-success">{{ log.produced_quantity|floatformat:0|intcomma }} {{ log.planning.product.unit }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card-custom text-center py-3 bg-danger-subtle border-danger">
+                <span class="text-xs text-danger d-block mb-1 fw-bold">ضایعات و پرتی</span>
+                <span class="font-mono fs-3 fw-bold text-danger">{{ log.rejected_quantity|floatformat:0|intcomma }} {{ log.planning.product.unit }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card-custom text-center py-3 bg-warning-subtle border-warning">
+                <span class="text-xs text-warning-emphasis d-block mb-1 fw-bold">زمان توقف خط</span>
+                <span class="font-mono fs-3 fw-bold text-warning-emphasis">{{ log.stoppage_minutes }} دقیقه</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Warehouse & Stoppage Details -->
+    <div class="card-custom mb-4">
+        <h5 class="fw-bold text-dark border-bottom pb-3 mb-3">وضعیت تراکنش‌های انبار و توقفات</h5>
+        <div class="row g-3 text-sm">
+            <div class="col-md-6">
+                <div class="p-3 bg-light rounded-3 border">
+                    <div class="fw-bold text-dark mb-2 d-flex align-items-center gap-2">
+                        <i data-feather="arrow-down-left" class="text-success"></i>
+                        <span>رسید محصول به انبار:</span>
+                    </div>
+                    {% if log.warehouse_received %}
+                        <div class="text-success fw-bold text-xs">
+                            <i data-feather="check-circle" class="me-1" style="width:14px;"></i>
+                            تحویل داده شد به {{ log.warehouse.name|default:"انبار اصلی" }}
+                        </div>
+                    {% else %}
+                        <div class="text-muted text-xs">تحویل انبار صورت نگرفته است.</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="p-3 bg-light rounded-3 border">
+                    <div class="fw-bold text-dark mb-2 d-flex align-items-center gap-2">
+                        <i data-feather="arrow-up-right" class="text-danger"></i>
+                        <span>کسر مواد اولیه از انبار:</span>
+                    </div>
+                    {% if log.raw_material_deducted %}
+                        <div class="text-success fw-bold text-xs">
+                            <i data-feather="check-circle" class="me-1" style="width:14px;"></i>
+                            مواد اولیه {{ log.planning.raw_material.name }} به صورت متناسب از انبار کسر شد.
+                        </div>
+                    {% else %}
+                        <div class="text-muted text-xs">مواد اولیه کسر نشده است.</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if log.stoppage_reason %}
+                <div class="col-12 mt-3">
+                    <span class="text-muted text-xs d-block mb-1">علل و دلایل توقف خط:</span>
+                    <div class="p-3 bg-warning-subtle text-warning-emphasis rounded-3 text-xs fw-semibold">
+                        {{ log.stoppage_reason }}
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if log.notes %}
+                <div class="col-12 mt-2">
+                    <span class="text-muted text-xs d-block mb-1">ملاحظات و یادداشت سرپرست:</span>
+                    <div class="p-3 bg-light rounded-3 text-xs">
+                        {{ log.notes }}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -9,8 +9,20 @@ from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 
 
+def check_customer_permission(user):
+    if user.is_superuser:
+        return True
+    profile = getattr(user, 'userprofile', None)
+    if not profile:
+        return False
+    return profile.is_admin_user or profile.access_customers
+
 @login_required
 def customer_list(request):
+    if not check_customer_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
+
     query = request.GET.get('q', '').strip()
     page_number = request.GET.get('page', 1)
     sort = request.GET.get('sort', 'name')
@@ -42,6 +54,9 @@ def customer_list(request):
 
 @login_required
 def customer_create(request):
+    if not check_customer_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     if request.method == 'POST':
         form = CustomerForm(request.POST)
         if form.is_valid():
@@ -53,6 +68,9 @@ def customer_create(request):
 
 @login_required
 def customer_edit(request, pk):
+    if not check_customer_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     customer = get_object_or_404(Customer, pk=pk)
     if request.method == 'POST':
         form = CustomerForm(request.POST, instance=customer)
@@ -65,12 +83,18 @@ def customer_edit(request, pk):
 
 @login_required
 def customer_delete_confirm(request, pk):
+    if not check_customer_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     customer = get_object_or_404(Customer, pk=pk)
     return render(request, 'customers/confirm_delete.html', {'customer': customer})
 
 @login_required
 @require_POST
 def customer_delete(request, pk):
+    if not check_customer_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect('core:dashboard')
     customer = get_object_or_404(Customer, pk=pk)
     customer.delete()
     messages.success(request, f'مشتری با موفقیت حذف شد')

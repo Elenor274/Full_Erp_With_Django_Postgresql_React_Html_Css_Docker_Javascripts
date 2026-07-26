@@ -7,10 +7,25 @@ from .forms import OrderForm, OrderItemFormSet, OrderDesignFileForm
 from .models import Order, OrderDesignFile
 
 # -----------------------------
+# بررسی سطح دسترسی سفارشات
+# -----------------------------
+def check_order_permission(user):
+    if user.is_superuser:
+        return True
+    profile = getattr(user, 'userprofile', None)
+    if not profile:
+        return False
+    return profile.is_admin_user or profile.access_orders
+
+# -----------------------------
 # ایجاد سفارش
 # -----------------------------
 @login_required
 def order_create(request):
+    if not check_order_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect("core:dashboard")
+
     if request.method == "POST":
         form = OrderForm(request.POST, request.FILES)
         formset = OrderItemFormSet(request.POST)
@@ -49,6 +64,9 @@ def order_create(request):
 # -----------------------------
 @login_required
 def order_list(request):
+    if not check_order_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect("core:dashboard")
     orders = Order.objects.all().prefetch_related('design_files').order_by("-id")
     return render(request, "orders/order_list.html", {"orders": orders})
 
@@ -58,6 +76,9 @@ def order_list(request):
 # -----------------------------
 @login_required
 def order_detail(request, pk):
+    if not check_order_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect("core:dashboard")
     order = get_object_or_404(Order, pk=pk)
     items = order.items.all()
     design_files = order.design_files.all()
@@ -76,6 +97,10 @@ def order_detail(request, pk):
 @login_required
 @require_POST
 def order_upload_design_file(request, pk):
+    if not check_order_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای این قسمت را ندارید.")
+        return redirect("core:dashboard")
+
     order = get_object_or_404(Order, pk=pk)
     files = request.FILES.getlist('file')
     title = request.POST.get('title', '')
@@ -102,6 +127,10 @@ def order_upload_design_file(request, pk):
 def order_delete_design_file(request, file_id):
     design_file = get_object_or_404(OrderDesignFile, pk=file_id)
     order_pk = design_file.order.pk
+    if not check_order_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای حذف نقشه را ندارید.")
+        return redirect("orders:order_detail", pk=order_pk)
+
     file_name = design_file.file_name
     design_file.file.delete(save=False)
     design_file.delete()
@@ -114,6 +143,10 @@ def order_delete_design_file(request, file_id):
 # -----------------------------
 @login_required
 def order_edit(request, pk):
+    if not check_order_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای ویرایش سفارش را ندارید.")
+        return redirect("orders:order_list")
+
     order = get_object_or_404(Order, pk=pk)
 
     if request.method == "POST":
@@ -156,6 +189,9 @@ def order_edit(request, pk):
 @login_required
 @require_POST
 def order_delete(request, pk):
+    if not check_order_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای حذف سفارش را ندارید.")
+        return redirect("orders:order_list")
     order = get_object_or_404(Order, pk=pk)
     order.delete()
     messages.success(request, f"سفارش {order.order_code} حذف شد.")
@@ -164,6 +200,9 @@ def order_delete(request, pk):
 
 @login_required
 def order_delete_confirm(request, pk):
+    if not check_order_permission(request.user):
+        messages.error(request, "شما دسترسی لازم برای حذف سفارش را ندارید.")
+        return redirect("orders:order_list")
     order = get_object_or_404(Order, pk=pk)
     return render(request, "orders/order_delete_confirm.html", {
         "order": order

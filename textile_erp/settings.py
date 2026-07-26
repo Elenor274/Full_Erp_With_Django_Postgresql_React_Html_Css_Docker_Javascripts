@@ -43,16 +43,59 @@ MIDDLEWARE = [
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-SESSION_COOKIE_SAMESITE = 'None'
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SAMESITE = 'None'
-CSRF_COOKIE_SECURE = True
+# SESSION & CSRF COOKIES
+# Secure cookies (Secure=True, SameSite=None) are ONLY required for HTTPS environments (like AI Studio / Cloud Run inside iframe).
+# For local HTTP development and LAN network access (e.g. Windows 11 on http://192.168.x.x:8000), cookies MUST NOT be Secure (Secure=False),
+# otherwise client browsers on HTTP will reject session and CSRF cookies, causing login failures from other devices.
+if 'ENABLE_SECURE_COOKIES' in os.environ:
+    ENABLE_SECURE_COOKIES = os.environ.get('ENABLE_SECURE_COOKIES', '').lower() in ('true', '1')
+else:
+    ENABLE_SECURE_COOKIES = 'APPLET_ID' in os.environ or 'CLOUD_RUN_TIMEOUT_SECONDS' in os.environ or 'RUN_APP' in os.environ
+
+if ENABLE_SECURE_COOKIES:
+    SESSION_COOKIE_SAMESITE = 'None'
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SAMESITE = 'None'
+    CSRF_COOKIE_SECURE = True
+else:
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SAMESITE = 'Lax'
+    CSRF_COOKIE_SECURE = False
+
 CSRF_TRUSTED_ORIGINS = [
     'https://*.run.app',
     'https://*.googleusercontent.com',
     'https://*.aistudio.google',
     'https://*.studio',
+    'http://localhost:*',
+    'http://127.0.0.1:*',
+    'http://192.168.*:*',
+    'http://192.168.*',
+    'http://10.*:*',
+    'http://10.*',
+    'http://172.16.*',
+    'http://172.17.*',
+    'http://172.18.*',
+    'http://172.19.*',
+    'http://172.20.*',
+    'http://172.21.*',
+    'http://172.22.*',
+    'http://172.23.*',
+    'http://172.24.*',
+    'http://172.25.*',
+    'http://172.26.*',
+    'http://172.27.*',
+    'http://172.28.*',
+    'http://172.29.*',
+    'http://172.30.*',
+    'http://172.31.*',
 ]
+
+# Allow dynamic local network origins for CSRF
+EXTRA_CSRF = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
+if EXTRA_CSRF:
+    CSRF_TRUSTED_ORIGINS.extend([origin.strip() for origin in EXTRA_CSRF.split(',') if origin.strip()])
 
 ROOT_URLCONF = 'textile_erp.urls'
 
@@ -60,7 +103,6 @@ ROOT_URLCONF = 'textile_erp.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        # اگر قالب‌های سراسری در <project_root>/templates قرار دارند این مسیر را اضافه کن
         'DIRS': [ BASE_DIR / "templates", ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -76,27 +118,45 @@ TEMPLATES = [
 WSGI_APPLICATION = 'textile_erp.wsgi.application'
 
 # DATABASE
-# Fallback to SQLite in development/sandboxed environments where PostgreSQL server is not available
-USE_POSTGRES = os.environ.get('DB_ENGINE') == 'postgresql'
+# PostgreSQL is the PRIMARY database engine for Textile ERP
+pg_db_config = {
+    'ENGINE': 'django.db.backends.postgresql',
+    'NAME': os.environ.get('DB_NAME', 'textile_db'),
+    'USER': os.environ.get('DB_USER', 'postgres'),
+    'PASSWORD': os.environ.get('DB_PASSWORD', '1234'),
+    'HOST': os.environ.get('DB_HOST', 'localhost'),
+    'PORT': os.environ.get('DB_PORT', '5432'),
+}
 
-if USE_POSTGRES:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get('DB_NAME', 'textile_db'),
-            'USER': os.environ.get('DB_USER', 'textile_user'),
-            'PASSWORD': os.environ.get('DB_PASSWORD', '1234'),
-            'HOST': os.environ.get('DB_HOST', 'localhost'),
-            'PORT': os.environ.get('DB_PORT', '5432'),
-        }
-    }
-else:
+if os.environ.get('USE_SQLITE', '').lower() in ('true', '1'):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+else:
+    # Try connecting to PostgreSQL first
+    try:
+        import psycopg2
+        conn = psycopg2.connect(
+            dbname=pg_db_config['NAME'],
+            user=pg_db_config['USER'],
+            password=pg_db_config['PASSWORD'],
+            host=pg_db_config['HOST'],
+            port=pg_db_config['PORT'],
+            connect_timeout=2
+        )
+        conn.close()
+        DATABASES = {'default': pg_db_config}
+    except Exception:
+        # Fallback to SQLite only if local PostgreSQL server is unreachable (e.g. inside cloud sandbox container)
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
+        }
 
 # PASSWORD VALIDATORS
 AUTH_PASSWORD_VALIDATORS = [

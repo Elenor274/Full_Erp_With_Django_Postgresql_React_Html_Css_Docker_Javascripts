@@ -1,0 +1,121 @@
+{% extends "core/base.html" %}
+
+{% block title %}ویرایش گزارش شیفت {{ log.log_code }} - ERP حاما پارچه{% endblock %}
+{% block page_title %}ویرایش گزارش عملکرد شیفت تولید{% endblock %}
+
+{% block content %}
+<div class="fade-in-up max-w-4xl mx-auto">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-1 text-gray-900">ویرایش برگه گزارش {{ log.log_code }}</h4>
+            <p class="text-muted text-xs mb-0">ویرایش اطلاعات عملکرد شیفت و بروزرسانی خودکار مقادیر انبار</p>
+        </div>
+        <a href="{% url 'production:log_list' %}" class="btn-outline-custom">
+            <i data-feather="arrow-right"></i>
+            <span>بازگشت به لیست</span>
+        </a>
+    </div>
+
+    <div class="card-custom">
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger mb-4 text-xs">
+                    {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label-custom">کد برگه گزارش</label>
+                    {{ form.log_code }}
+                </div>
+
+                <div class="col-md-8">
+                    <label class="form-label-custom">برنامه‌ریزی تولید مرتبط</label>
+                    {{ form.planning }}
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label-custom">تاریخ ثبت کارکرد</label>
+                    {{ form.date }}
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label-custom">شیفت کاری</label>
+                    {{ form.shift }}
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label-custom">اپراتور / مسئول شیفت</label>
+                    {{ form.operator }}
+                </div>
+
+                <hr class="my-3 text-muted">
+
+                <div class="col-md-4">
+                    <label class="form-label-custom">مقدار تولید سالم</label>
+                    {{ form.produced_quantity }}
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label-custom">مقدار ضایعات / پرتی</label>
+                    {{ form.rejected_quantity }}
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label-custom">زمان توقف خط (دقیقه)</label>
+                    {{ form.stoppage_minutes }}
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label-custom">علل توقف خط</label>
+                    {{ form.stoppage_reason }}
+                </div>
+
+                <hr class="my-3 text-muted">
+
+                <div class="col-md-6">
+                    <div class="card bg-light border p-3">
+                        <div class="form-check form-switch mb-2">
+                            {{ form.receive_to_warehouse }}
+                            <label class="form-check-label fw-bold text-xs" for="{{ form.receive_to_warehouse.id_for_label }}">
+                                ارسال و تحویل به انبار
+                            </label>
+                        </div>
+                        <label class="form-label-custom text-xs">انبار تحویل‌گیرنده</label>
+                        {{ form.warehouse }}
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card bg-light border p-3">
+                        <div class="form-check form-switch mb-2">
+                            {{ form.deduct_raw_material }}
+                            <label class="form-check-label fw-bold text-xs" for="{{ form.deduct_raw_material.id_for_label }}">
+                                کسر خودکار مواد اولیه
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 mt-3">
+                    <label class="form-label-custom">ملاحظات و یادداشت سرپرست</label>
+                    {{ form.notes }}
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                <a href="{% url 'production:log_list' %}" class="btn-outline-custom">انصراف</a>
+                <button type="submit" class="btn-primary-custom">
+                    <i data-feather="check"></i>
+                    <span>ذخیره تغییرات</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

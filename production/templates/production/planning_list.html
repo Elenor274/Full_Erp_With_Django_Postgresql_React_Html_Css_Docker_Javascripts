@@ -25,9 +25,11 @@
                 <p class="text-muted text-xs mb-0 leading-relaxed">تعیین دستور کار خطوط، تخصیص ماشین‌آلات و اپراتورها به مراحل گوناگون تولید (بافندگی، رنگرزی، تکمیل) و رهگیری در لحظه راندمان کارخانه.</p>
             </div>
             <div class="col-md-3 text-md-end mt-3 mt-md-0 d-flex flex-column align-items-md-end gap-2 justify-content-center">
+                {% if user.is_superuser or user.userprofile.access_production_planning or user.userprofile.access_production %}
                 <a href="{% url 'production:planning_create' %}" class="btn btn-primary text-white d-inline-flex align-items-center gap-1.5 py-2 px-3.5 rounded-3 border-0 text-xs fw-bold font-sans" style="background: var(--accent); box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15); width: fit-content;">
                     <i data-feather="plus-circle" style="width: 15px; height: 15px;"></i> برنامه‌ریزی تولید جدید
                 </a>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -161,15 +163,20 @@
                         <!-- عملیات -->
                         <td class="pe-4 text-center">
                             <div class="d-flex justify-content-center gap-1.5">
+                                <a href="{% url 'production:log_create' %}?planning_id={{ plan.id }}" class="btn-edit" style="background-color: rgba(16, 185, 129, 0.1) !important; color: #059669 !important;" title="ثبت عملکرد تولید توسط سرپرست">
+                                    <i data-feather="plus" style="width: 12px; height: 12px;"></i> ثبت کارکرد
+                                </a>
                                 <a href="{% url 'production:planning_detail' plan.pk %}" class="btn-edit" style="background-color: rgba(79, 70, 229, 0.08) !important; color: var(--accent) !important;">
                                     <i data-feather="eye" style="width: 12px; height: 12px;"></i> جزئیات
                                 </a>
+                                {% if user.is_superuser or user.userprofile.access_production_planning or user.userprofile.access_production %}
                                 <a href="{% url 'production:planning_edit' plan.pk %}" class="btn-edit">
                                     <i data-feather="edit-2" style="width: 12px; height: 12px;"></i> ویرایش
                                 </a>
                                 <a href="{% url 'production:planning_delete' plan.pk %}" class="btn-delete">
                                     <i data-feather="trash-2" style="width: 12px; height: 12px;"></i> حذف
                                 </a>
+                                {% endif %}
                             </div>
                         </td>
                     </tr>

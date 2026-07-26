@@ -1,0 +1,165 @@
+{% extends "core/base.html" %}
+
+{% block title %}ثبت گزارش کارکرد شیفت - ERP حاما پارچه{% endblock %}
+{% block page_title %}ثبت گزارش کارکرد شیفت تولید{% endblock %}
+
+{% block content %}
+<div class="fade-in-up max-w-4xl mx-auto">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-1 text-gray-900">ثبت کارکرد شیفت / عملکرد خط تولید</h4>
+            <p class="text-muted text-xs mb-0">گزارش روزانه یا شیفتی سرپرست واحد برای بروزرسانی خودکار موجودی انبار و برنامه‌ریزی</p>
+        </div>
+        <a href="{% url 'production:log_list' %}" class="btn-outline-custom">
+            <i data-feather="arrow-right"></i>
+            <span>بازگشت به لیست</span>
+        </a>
+    </div>
+
+    <div class="card-custom">
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger mb-4 text-xs">
+                    {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="row g-3">
+                <!-- کد برگه -->
+                <div class="col-md-4">
+                    <label class="form-label-custom">کد برگه گزارش</label>
+                    {{ form.log_code }}
+                    <span class="text-xxs text-muted">در صورت خالی بودن خودکار تولید می‌شود.</span>
+                    {% if form.log_code.errors %}
+                        <div class="text-danger text-xxs mt-1">{{ form.log_code.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- برنامه‌ریزی تولید -->
+                <div class="col-md-8">
+                    <label class="form-label-custom">برنامه‌ریزی تولید مرتبط <span class="text-danger">*</span></label>
+                    {{ form.planning }}
+                    {% if form.planning.errors %}
+                        <div class="text-danger text-xxs mt-1">{{ form.planning.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- تاریخ -->
+                <div class="col-md-4">
+                    <label class="form-label-custom">تاریخ ثبت کارکرد <span class="text-danger">*</span></label>
+                    {{ form.date }}
+                    {% if form.date.errors %}
+                        <div class="text-danger text-xxs mt-1">{{ form.date.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- شیفت کاری -->
+                <div class="col-md-4">
+                    <label class="form-label-custom">شیفت کاری <span class="text-danger">*</span></label>
+                    {{ form.shift }}
+                    {% if form.shift.errors %}
+                        <div class="text-danger text-xxs mt-1">{{ form.shift.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- اپراتور مسئول -->
+                <div class="col-md-4">
+                    <label class="form-label-custom">اپراتور / مسئول شیفت</label>
+                    {{ form.operator }}
+                    {% if form.operator.errors %}
+                        <div class="text-danger text-xxs mt-1">{{ form.operator.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <hr class="my-3 text-muted">
+
+                <!-- مقدار تولید سالم -->
+                <div class="col-md-4">
+                    <label class="form-label-custom">مقدار تولید سالم در این شیفت <span class="text-danger">*</span></label>
+                    {{ form.produced_quantity }}
+                    {% if form.produced_quantity.errors %}
+                        <div class="text-danger text-xxs mt-1">{{ form.produced_quantity.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- مقدار ضایعات -->
+                <div class="col-md-4">
+                    <label class="form-label-custom">مقدار ضایعات / پرتی تولید</label>
+                    {{ form.rejected_quantity }}
+                    {% if form.rejected_quantity.errors %}
+                        <div class="text-danger text-xxs mt-1">{{ form.rejected_quantity.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- زمان توقف خط -->
+                <div class="col-md-4">
+                    <label class="form-label-custom">زمان توقف خط (دقیقه)</label>
+                    {{ form.stoppage_minutes }}
+                    {% if form.stoppage_minutes.errors %}
+                        <div class="text-danger text-xxs mt-1">{{ form.stoppage_minutes.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- علل توقف -->
+                <div class="col-12">
+                    <label class="form-label-custom">علل و دلایل توقف خط یا مشکلات تولید</label>
+                    {{ form.stoppage_reason }}
+                    {% if form.stoppage_reason.errors %}
+                        <div class="text-danger text-xxs mt-1">{{ form.stoppage_reason.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <hr class="my-3 text-muted">
+
+                <!-- تنظیمات انبار -->
+                <div class="col-md-6">
+                    <div class="card bg-light border p-3">
+                        <div class="form-check form-switch mb-2">
+                            {{ form.receive_to_warehouse }}
+                            <label class="form-check-label fw-bold text-xs" for="{{ form.receive_to_warehouse.id_for_label }}">
+                                ارسال و تحویل محصول تولیدی به انبار
+                            </label>
+                        </div>
+                        <label class="form-label-custom text-xs">انبار تحویل‌گیرنده محصول</label>
+                        {{ form.warehouse }}
+                        <span class="text-xxs text-muted mt-1">در صورت انتخاب نکردن، انبار محصولات نهایی سیستم انتخاب می‌شود.</span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card bg-light border p-3">
+                        <div class="form-check form-switch mb-2">
+                            {{ form.deduct_raw_material }}
+                            <label class="form-check-label fw-bold text-xs" for="{{ form.deduct_raw_material.id_for_label }}">
+                                کسر متناسب مواد اولیه از انبار
+                            </label>
+                        </div>
+                        <p class="text-xxs text-muted mb-0">با فعال بودن این گزینه، مقدار مواد اولیه بر اساس نسبت تولید این شیفت به برنامه‌ریزی کل، به صورت خودکار از انبار کسر می‌گردد.</p>
+                    </div>
+                </div>
+
+                <!-- توضیحات و ملاحظات -->
+                <div class="col-12 mt-3">
+                    <label class="form-label-custom">ملاحظات و یادداشت سرپرست واحد</label>
+                    {{ form.notes }}
+                    {% if form.notes.errors %}
+                        <div class="text-danger text-xxs mt-1">{{ form.notes.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                <a href="{% url 'production:log_list' %}" class="btn-outline-custom">انصراف</a>
+                <button type="submit" class="btn-primary-custom">
+                    <i data-feather="check"></i>
+                    <span>ثبت و اعمال در انبار</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -25,13 +25,8 @@ def user_create(request):
             
             # Since UserProfile is created automatically on post_save, retrieve it and update
             profile = user.userprofile
-            profile.access_orders = profile_form.cleaned_data['access_orders']
-            profile.access_customers = profile_form.cleaned_data['access_customers']
-            profile.access_products = profile_form.cleaned_data['access_products']
-            profile.access_warehouse = profile_form.cleaned_data['access_warehouse']
-            profile.access_production = profile_form.cleaned_data['access_production']
-            profile.access_reports = profile_form.cleaned_data['access_reports']
-            profile.is_admin_user = profile_form.cleaned_data['is_admin_user']
+            for field_name, value in profile_form.cleaned_data.items():
+                setattr(profile, field_name, value)
             profile.save()
             
             messages.success(request, f"کاربر {user.username} با موفقیت ساخته شد.")
