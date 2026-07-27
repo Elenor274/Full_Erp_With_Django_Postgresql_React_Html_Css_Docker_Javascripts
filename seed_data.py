@@ -18,15 +18,15 @@ def seed_database():
 
     # 1. Create or Update Superuser
     user, created = User.objects.get_or_create(username='admin', defaults={'email': 'admin@example.com', 'first_name': 'مدیر', 'last_name': 'سیستم'})
-    user.set_password('admin1234')
+    user.set_password('admin123')
     user.is_superuser = True
     user.is_staff = True
     user.is_active = True
     user.save()
     if created:
-        print("Created superuser: admin / admin1234")
+        print("Created superuser: admin / admin123")
     else:
-        print("Updated superuser: admin / admin1234")
+        print("Updated superuser: admin / admin123")
 
     # 2. Create Warehouses
     wh_raw, _ = Warehouse.objects.get_or_create(

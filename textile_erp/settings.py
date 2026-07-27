@@ -5,10 +5,10 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY
-SECRET_KEY = 'django-insecure-qe*1+!(k$m&2qnuk&wy47k@&)xr*442=mhvhu+&9dn_p_r^2o4'
-DEBUG = True
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-textile-erp-dev-key-change-in-production')
+DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [host.strip() for host in os.environ.get('ALLOWED_HOSTS', '*').split(',') if host.strip()]
 
 # APPLICATIONS
 INSTALLED_APPS = [
@@ -28,7 +28,6 @@ INSTALLED_APPS = [
     'warehouse',
     'production',
     'users',
-    # 'inventory',  # اگر اپ inventory داری این را فعال کن
 ]
 
 # MIDDLEWARE
@@ -40,13 +39,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'users.middleware.UserPermissionMiddleware',
-    # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 # SESSION & CSRF COOKIES
-# Secure cookies (Secure=True, SameSite=None) are ONLY required for HTTPS environments (like AI Studio / Cloud Run inside iframe).
-# For local HTTP development and LAN network access (e.g. Windows 11 on http://192.168.x.x:8000), cookies MUST NOT be Secure (Secure=False),
-# otherwise client browsers on HTTP will reject session and CSRF cookies, causing login failures from other devices.
 if 'ENABLE_SECURE_COOKIES' in os.environ:
     ENABLE_SECURE_COOKIES = os.environ.get('ENABLE_SECURE_COOKIES', '').lower() in ('true', '1')
 else:
@@ -70,26 +65,6 @@ CSRF_TRUSTED_ORIGINS = [
     'https://*.studio',
     'http://localhost:*',
     'http://127.0.0.1:*',
-    'http://192.168.*:*',
-    'http://192.168.*',
-    'http://10.*:*',
-    'http://10.*',
-    'http://172.16.*',
-    'http://172.17.*',
-    'http://172.18.*',
-    'http://172.19.*',
-    'http://172.20.*',
-    'http://172.21.*',
-    'http://172.22.*',
-    'http://172.23.*',
-    'http://172.24.*',
-    'http://172.25.*',
-    'http://172.26.*',
-    'http://172.27.*',
-    'http://172.28.*',
-    'http://172.29.*',
-    'http://172.30.*',
-    'http://172.31.*',
 ]
 
 # Allow dynamic local network origins for CSRF
@@ -117,13 +92,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'textile_erp.wsgi.application'
 
-# DATABASE
-# PostgreSQL is the PRIMARY database engine for Textile ERP
+# DATABASE CONFIGURATION
+# PostgreSQL is the primary target database. Fallback to SQLite if PostgreSQL server is not running locally.
 pg_db_config = {
-    'ENGINE': 'django.db.backends.postgresql',
+    'ENGINE': os.environ.get('DB_ENGINE', 'django.db.backends.postgresql'),
     'NAME': os.environ.get('DB_NAME', 'textile_db'),
     'USER': os.environ.get('DB_USER', 'postgres'),
-    'PASSWORD': os.environ.get('DB_PASSWORD', '1234'),
+    'PASSWORD': os.environ.get('DB_PASSWORD', 'postgres'),
     'HOST': os.environ.get('DB_HOST', 'localhost'),
     'PORT': os.environ.get('DB_PORT', '5432'),
 }
@@ -136,7 +111,6 @@ if os.environ.get('USE_SQLITE', '').lower() in ('true', '1'):
         }
     }
 else:
-    # Try connecting to PostgreSQL first
     try:
         import psycopg2
         conn = psycopg2.connect(
@@ -150,7 +124,7 @@ else:
         conn.close()
         DATABASES = {'default': pg_db_config}
     except Exception:
-        # Fallback to SQLite only if local PostgreSQL server is unreachable (e.g. inside cloud sandbox container)
+        # Fallback to local SQLite if PostgreSQL connection fails
         DATABASES = {
             'default': {
                 'ENGINE': 'django.db.backends.sqlite3',

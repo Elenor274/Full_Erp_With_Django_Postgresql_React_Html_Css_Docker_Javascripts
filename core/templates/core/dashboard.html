@@ -1,16 +1,12 @@
 {% extends "core/base.html" %}
 {% load static %}
 {% block title %}داشبورد مدیریتی | حاما پارچه{% endblock %}
-{% block page_title %}داشبورد مدیریتی و نظارت تولید{% endblock %}
+{% block page_title %}داشبورد مدیریتی و نظارت هوشمند تولید{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="{% static 'css/main.css' %}">
 <style>
-/* Enterprise Dashboard — Wallpaper & Glassmorphism Theme
-   - Subtle weave wallpaper pattern backdrop
-   - Glassmorphic panels with soft gradient borders & hover glows
-   - Jalali clock formatted without comma separators in years
-*/
+/* Enterprise Dashboard — Wallpaper & Glassmorphism Theme */
 
 :root {
   --dash-bg: #f8fafc;
@@ -30,7 +26,6 @@
   --dash-transition: 250ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Wallpaper Root Container */
 .dashboard-root {
   background-color: var(--dash-bg);
   background-image: 
@@ -50,7 +45,7 @@
   min-height: 100vh;
 }
 
-/* Hero Glassmorphic Header Wallpaper Banner */
+/* Hero Banner */
 .hero-banner {
   background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #1e293b 100%);
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
@@ -69,14 +64,6 @@
   position: absolute;
   top: 0; right: 0; bottom: 0; left: 0;
   background-image: radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.08) 0%, transparent 60%);
-  pointer-events: none;
-}
-.hero-banner::after {
-  content: '';
-  position: absolute;
-  left: -40px; bottom: -40px;
-  width: 220px; height: 220px;
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
   pointer-events: none;
 }
 
@@ -165,7 +152,6 @@
   100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
 }
 
-/* Quick Actions Ribbon inside Hero */
 .hero-quick-actions {
   display: flex;
   align-items: center;
@@ -204,7 +190,7 @@
   gap: var(--dash-gap);
 }
 .kpi-card {
-  grid-column: span 4;
+  grid-column: span 3;
   background: var(--dash-panel);
   border: 1px solid var(--dash-border) !important;
   border-radius: var(--dash-radius);
@@ -249,8 +235,8 @@
   color: #ffffff;
 }
 .kpi-content { flex: 1; }
-.kpi-title { font-size: 12.5px; font-weight: 700; color: var(--dash-muted); margin-bottom: 2px; }
-.kpi-value { font-size: 24px; font-weight: 800; color: var(--dash-text); font-family: "Vazirmatn", sans-serif; }
+.kpi-title { font-size: 12px; font-weight: 700; color: var(--dash-muted); margin-bottom: 2px; }
+.kpi-value { font-size: 22px; font-weight: 800; color: var(--dash-text); font-family: "Vazirmatn", sans-serif; }
 .kpi-trend {
   font-size: 11px;
   font-weight: 700;
@@ -295,7 +281,7 @@
   margin-bottom: 4px;
 }
 .panel-title {
-  font-size: 15.5px;
+  font-size: 15px;
   font-weight: 800;
   margin: 0;
   color: var(--dash-text);
@@ -355,7 +341,7 @@
   border-top: 1px solid #f1f5f9;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
-  font-size: 13.5px;
+  font-size: 13px;
   color: var(--dash-text);
 }
 .table-custom tbody td:first-child {
@@ -386,19 +372,13 @@
   transition: all var(--dash-transition);
 }
 .btn-icon:hover { background: var(--dash-accent); color: #ffffff; transform: translateY(-2px); }
-.btn-icon.danger {
-  background: rgba(239, 68, 68, 0.06);
-  border-color: rgba(239, 68, 68, 0.08);
-  color: var(--dash-danger);
-}
-.btn-icon.danger:hover { background: var(--dash-danger); color: #ffffff; }
 
 /* Timeline & Widgets */
-.timeline { display: flex; flex-direction: column; gap: 14px; overflow: auto; padding-right: 4px; }
+.timeline { display: flex; flex-direction: column; gap: 12px; overflow: auto; padding-right: 2px; }
 .timeline-item {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 14px;
+  gap: 12px;
   align-items: start;
   padding: 12px;
   background: #f8fafc;
@@ -413,22 +393,20 @@
   transform: translateY(-2px);
 }
 .timeline-icon {
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(79, 70, 229, 0.07);
-  color: var(--dash-accent);
+  font-size: 14px;
   transition: all 0.2s;
 }
-.timeline-item:hover .timeline-icon { background: var(--dash-accent); color: #ffffff; }
 .timeline-time { font-size: 11px; font-weight: 700; color: #94a3b8; margin-bottom: 2px; }
-.timeline-desc { font-size: 13px; font-weight: 600; color: #334155; line-height: 1.5; }
+.timeline-desc { font-size: 12.5px; font-weight: 600; color: #334155; line-height: 1.5; }
 
-/* Tasks */
-.tasks { display: flex; flex-direction: column; gap: 12px; }
+/* Tasks / System Reminders */
+.tasks { display: flex; flex-direction: column; gap: 10px; }
 .task-item {
   display: flex;
   justify-content: space-between;
@@ -441,20 +419,12 @@
 }
 .task-item:hover {
   background: #ffffff;
-  border-color: rgba(79, 70, 229, 0.15);
-  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.03);
+  border-color: rgba(79, 70, 229, 0.2);
+  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.05);
+  transform: translateX(-3px);
 }
-.task-label { display: flex; align-items: center; gap: 12px; cursor: pointer; }
-.task-checkbox {
-  width: 18px;
-  height: 18px;
-  border-radius: 6px;
-  border: 1.5px solid #cbd5e1;
-  accent-color: var(--dash-accent);
-  cursor: pointer;
-}
-.task-title { font-weight: 700; font-size: 13px; color: #334155; }
-.task-meta { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+.task-title { font-weight: 700; font-size: 12.5px; color: #1e293b; }
+.task-meta { font-size: 11px; color: #64748b; margin-top: 2px; }
 
 /* Summary Grid */
 .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
@@ -468,14 +438,14 @@
 }
 .summary-item:hover { background: #ffffff; border-color: rgba(79, 70, 229, 0.15); }
 .summary-label { font-size: 11px; font-weight: 700; color: var(--dash-muted); margin-bottom: 4px; }
-.summary-value { font-weight: 800; font-size: 17px; color: var(--dash-text); }
+.summary-value { font-weight: 800; font-size: 16px; color: var(--dash-text); }
 
 /* Bottom Row */
 .bottom-row { display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--dash-gap); align-items: start; }
 .inventory-panel { grid-column: span 6; display: flex; flex-direction: column; gap: 16px; }
 .sales-panel { grid-column: span 6; display: flex; flex-direction: column; gap: 16px; }
 
-.inventory-list { display: flex; flex-direction: column; gap: 12px; }
+.inventory-list { display: flex; flex-direction: column; gap: 10px; }
 .inventory-item {
   display: flex;
   justify-content: space-between;
@@ -487,19 +457,20 @@
   transition: all var(--dash-transition);
 }
 .inventory-item:hover { background: #ffffff; border-color: rgba(79, 70, 229, 0.15); }
-.inventory-name { font-weight: 700; font-size: 13px; color: #334155; }
+.inventory-name { font-weight: 700; font-size: 12.5px; color: #334155; }
 .inventory-sku { font-size: 11px; color: #94a3b8; margin-top: 2px; }
 .inventory-stats { display: flex; gap: 14px; align-items: center; justify-content: flex-end; }
-.inventory-qty { font-size: 12px; color: #475569; }
-.inventory-fill { width: 100px; height: 6px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
-.inventory-fill .bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--dash-accent), var(--dash-emerald)); border-radius: 10px; transition: width .6s cubic-bezier(.2,.9,.3,1); }
+.inventory-qty { font-size: 11.5px; color: #475569; }
+.inventory-fill { width: 90px; height: 6px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
+.inventory-fill .bar { height: 100%; background: linear-gradient(90deg, var(--dash-accent), var(--dash-emerald)); border-radius: 10px; transition: width .6s cubic-bezier(.2,.9,.3,1); }
 
 .chart-wrap { height: 260px; display: flex; align-items: center; justify-content: center; }
 .empty-state { padding: 40px; text-align: center; color: var(--dash-muted); font-size: 13px; }
 
-/* Responsive */
-@media (max-width: 1100px) {
+@media (max-width: 1200px) {
   .kpi-card { grid-column: span 6; }
+}
+@media (max-width: 992px) {
   .panel-orders { grid-column: span 12; min-height: 360px; }
   .side-stack { grid-column: span 12; }
   .inventory-panel, .sales-panel { grid-column: span 12; }
@@ -525,9 +496,9 @@
           <i data-feather="user" style="width: 24px; height: 24px;"></i>
         </div>
         <div class="hero-title-group">
-          <div class="hello">خوش آمدید، <span class="role-badge">مدیریت ارشد تولید</span></div>
+          <div class="hello">خوش آمدید، <span class="role-badge">مدیریت ارشد سیستم ERP</span></div>
           <div id="dashboard-title" class="username">
-            {% if user.is_authenticated %}{{ user.get_full_name|default:user.username }}{% else %}کاربر عزیز{% endif %}
+            {% if user.is_authenticated %}{{ user.get_full_name|default:user.username }}{% else %}کاربر گرامی{% endif %}
           </div>
         </div>
       </div>
@@ -537,13 +508,13 @@
           <span id="jalali-date" class="jalali-date">—</span>
           <span id="jalali-time" class="jalali-time">—</span>
         </div>
-        <div class="status-pill-live">سیستم: فعال و آماده کار</div>
+        <div class="status-pill-live">موتور محاسباتی: برخط و پویا</div>
       </div>
     </div>
 
     <!-- Quick Actions Ribbon -->
     <div class="hero-quick-actions">
-      <span class="text-xs text-slate-300 font-bold ms-1">دسترسی سریع:</span>
+      <span class="text-xs text-slate-300 font-bold ms-1">میانبرهای عملیاتی:</span>
       <a href="{% url 'orders:order_create' %}" class="quick-act-btn">
         <i data-feather="plus-circle" style="width:15px;height:15px;"></i>
         <span>ثبت سفارش جدید</span>
@@ -560,6 +531,10 @@
         <i data-feather="clipboard" style="width:15px;height:15px;"></i>
         <span>ثبت برگه QC</span>
       </a>
+      <a href="{% url 'production:maintenance_create' %}" class="quick-act-btn">
+        <i data-feather="tool" style="width:15px;height:15px;"></i>
+        <span>درخواست تعمیر نت</span>
+      </a>
       <a href="{% url 'warehouse:warehouse_list' %}" class="quick-act-btn">
         <i data-feather="package" style="width:15px;height:15px;"></i>
         <span>مدیریت انبار</span>
@@ -567,16 +542,16 @@
     </div>
   </header>
 
-  <!-- Executive KPI Strip -->
+  <!-- Executive KPI Strip (Dynamic DB Aggregations) -->
   <section class="kpi-strip" aria-label="شاخص های کلیدی">
     <div class="kpi-card" role="article">
-      <div class="kpi-icon-wrap" aria-hidden="true"><i data-feather="clock"></i></div>
+      <div class="kpi-icon-wrap" aria-hidden="true"><i data-feather="activity"></i></div>
       <div class="kpi-content">
         <div class="kpi-title">سفارشات در حال تولید</div>
         <div class="kpi-value persianize">{{ totals.in_progress_orders|default:"0" }}</div>
         <div class="kpi-trend positive">
-          <i data-feather="trending-up" style="width:12px;height:12px;"></i>
-          <span>تکمیل روند بافت</span>
+          <i data-feather="refresh-cw" style="width:12px;height:12px;"></i>
+          <span>محاسبه خودکار از خطوط</span>
         </div>
       </div>
     </div>
@@ -588,97 +563,69 @@
         <div class="kpi-value persianize">{{ totals.customers_count|default:"0" }}</div>
         <div class="kpi-trend neutral">
           <i data-feather="check-circle" style="width:12px;height:12px;"></i>
-          <span>حساب‌های فعال</span>
+          <span>طرف‌های حساب فعال</span>
         </div>
       </div>
     </div>
 
     <div class="kpi-card" role="article">
-      <div class="kpi-icon-wrap" aria-hidden="true"><i data-feather="package"></i></div>
+      <div class="kpi-icon-wrap" aria-hidden="true"><i data-feather="shopping-cart"></i></div>
       <div class="kpi-content">
         <div class="kpi-title">کل سفارشات ثبت شده</div>
         <div class="kpi-value persianize">{{ totals.total_orders|default:"0" }}</div>
         <div class="kpi-trend positive">
           <i data-feather="trending-up" style="width:12px;height:12px;"></i>
-          <span>+۱۲٪ نسبت به ماه قبل</span>
+          <span>در دیتابیس سیستم</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card" role="article">
+      <div class="kpi-icon-wrap" aria-hidden="true"><i data-feather="cpu"></i></div>
+      <div class="kpi-content">
+        <div class="kpi-title">ماشین‌آلات فعال / کل</div>
+        <div class="kpi-value persianize">{{ totals.active_machines|default:"0" }} / {{ totals.total_machines|default:"0" }}</div>
+        <div class="kpi-trend positive">
+          <i data-feather="check" style="width:12px;height:12px;"></i>
+          <span>وضعیت زنده سالن‌ها</span>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Live Factory Machinery Status Strip -->
+  <!-- Live Dynamic Factory Machinery Status Strip -->
   <section class="panel mb-4" aria-label="وضعیت زنده خطوط تولید و ماشین‌آلات">
     <div class="panel-head">
-      <h3 class="panel-title">پایش زنده ماشین‌آلات سالن بافندگی و رنگرزی</h3>
+      <h3 class="panel-title">پایش زنده ماشین‌آلات سالن بافندگی و رنگرزی (محاسبه از دیتابیس)</h3>
       <div class="panel-actions">
         <a href="{% url 'production:machine_list' %}">مدیریت ماشین‌آلات</a>
       </div>
     </div>
 
     <div class="row g-3 mt-1">
-      <div class="col-12 col-md-6 col-lg-3">
-        <div class="p-3 border rounded-3 bg-white shadow-sm h-100 position-relative border-start border-4 border-success">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="fw-bold text-dark fs-6">دستگاه Loom-01 (سولزر)</span>
-            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill text-xs">
-              <i data-feather="check-circle" style="width:10px;height:10px;"></i> درحال بافت
-            </span>
+      {% if machines_list %}
+        {% for m in machines_list %}
+          <div class="col-12 col-md-6 col-lg-3">
+            <div class="p-3 border rounded-3 bg-white shadow-sm h-100 position-relative border-start border-4 {% if m.status == 'active' %}border-success{% elif m.status == 'repair' %}border-danger{% else %}border-secondary{% endif %}">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-bold text-dark fs-6">{{ m.name }}</span>
+                <span class="badge {{ m.badge_class }} px-2 py-1 rounded-pill text-xs">
+                  <i data-feather="{{ m.status_icon }}" style="width:10px;height:10px;"></i> {{ m.status_display }}
+                </span>
+              </div>
+              <div class="text-muted text-xs mb-2">محصول / وضعیت: <strong class="text-dark">{{ m.product_title }}</strong></div>
+              <div class="d-flex justify-content-between align-items-center text-xs text-dark font-mono bg-light p-2 rounded">
+                <span>کد: <strong>{{ m.code }}</strong></span>
+                <span>اپراتور: <strong class="text-primary">{{ m.operator_title }}</strong></span>
+              </div>
+            </div>
           </div>
-          <div class="text-muted text-xs mb-2">محصول: پارچه جین ۱۲ اونس کجراه</div>
-          <div class="d-flex justify-content-between align-items-center text-xs text-dark font-mono bg-light p-2 rounded">
-            <span>سرعت: <strong>480 RPM</strong></span>
-            <span>راندمان: <strong class="text-success">98%</strong></span>
-          </div>
+        {% endfor %}
+      {% else %}
+        <div class="col-12">
+          <div class="p-4 text-center text-muted text-xs">هیچ دستگاهی در دیتابیس ثبت نشده است. می‌توانید از بخش «مدیریت ماشین‌آلات» دستگاه اضافه کنید.</div>
         </div>
-      </div>
-
-      <div class="col-12 col-md-6 col-lg-3">
-        <div class="p-3 border rounded-3 bg-white shadow-sm h-100 position-relative border-start border-4 border-primary">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="fw-bold text-dark fs-6">دستگاه Loom-02 (پیکانول)</span>
-            <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 rounded-pill text-xs">
-              <i data-feather="rotate-cw" style="width:10px;height:10px;"></i> درحال چله‌کشی
-            </span>
-          </div>
-          <div class="text-muted text-xs mb-2">محصول: پارچه کتان پنبه‌ای</div>
-          <div class="d-flex justify-content-between align-items-center text-xs text-dark font-mono bg-light p-2 rounded">
-            <span>سرعت: <strong>520 RPM</strong></span>
-            <span>راندمان: <strong class="text-primary">94%</strong></span>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-md-6 col-lg-3">
-        <div class="p-3 border rounded-3 bg-white shadow-sm h-100 position-relative border-start border-4 border-info">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="fw-bold text-dark fs-6">پاتیل Dyeing-02</span>
-            <span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1 rounded-pill text-xs">
-              <i data-feather="droplet" style="width:10px;height:10px;"></i> رنگرزی مداوم
-            </span>
-          </div>
-          <div class="text-muted text-xs mb-2">رنگ: نیل سرمه‌ای (Indigo)</div>
-          <div class="d-flex justify-content-between align-items-center text-xs text-dark font-mono bg-light p-2 rounded">
-            <span>دما: <strong>95°C</strong></span>
-            <span>کیفیت: <strong class="text-info">100%</strong></span>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-md-6 col-lg-3">
-        <div class="p-3 border rounded-3 bg-white shadow-sm h-100 position-relative border-start border-4 border-warning">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="fw-bold text-dark fs-6">استنتر Stenter-01</span>
-            <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1 rounded-pill text-xs">
-              <i data-feather="tool" style="width:10px;height:10px;"></i> سرویس دوره‌ای
-            </span>
-          </div>
-          <div class="text-muted text-xs mb-2">تکمیل و تثبیت حرارتی</div>
-          <div class="d-flex justify-content-between align-items-center text-xs text-dark font-mono bg-light p-2 rounded">
-            <span>توقف: <strong>15 دقیقه</strong></span>
-            <span>وضعیت: <strong class="text-warning">بررسی تکنیسین</strong></span>
-          </div>
-        </div>
-      </div>
+      {% endif %}
     </div>
   </section>
 
@@ -688,7 +635,7 @@
     <!-- Recent Orders Table -->
     <section class="panel panel-orders" aria-labelledby="orders-heading">
       <div class="panel-head">
-        <h2 id="orders-heading" class="panel-title">آخرین سفارشات کارخانه</h2>
+        <h2 id="orders-heading" class="panel-title">آخرین سفارشات ثبت‌شده کارخانه</h2>
         <div class="panel-actions d-flex align-items-center gap-2">
           <div class="position-relative">
             <input type="text" id="orderSearchInput" class="form-control form-control-sm ps-4 pe-2 text-xs border-slate-200" style="width: 180px; border-radius: 8px;" placeholder="جستجو در سفارشات...">
@@ -734,7 +681,7 @@
                   <td class="text-muted font-mono text-xs">{{ o.date|default:"—" }}</td>
                   <td class="text-left fw-bold font-mono text-dark persianize">{{ o.total|default:"0" }} ریال</td>
                   <td>
-                    <span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">
+                    <span class="badge rounded-pill {{ o.status_badge }} px-2 py-1">
                       {{ o.status|default:"—" }}
                     </span>
                   </td>
@@ -748,7 +695,7 @@
               {% endfor %}
             {% else %}
               <tr>
-                <td colspan="7" class="empty-state">هیچ سفارشی ثبت نشده است</td>
+                <td colspan="7" class="empty-state">هیچ سفارشی در سیستم یافت نشد.</td>
               </tr>
             {% endif %}
           </tbody>
@@ -757,84 +704,87 @@
     </section>
 
     <!-- Side Stack Widgets -->
-    <aside class="side-stack" aria-label="اعلا‌ن‌ها و یادآورها">
+    <aside class="side-stack" aria-label="اعلا‌ن‌ها و هشدارهای سیستم">
 
-      <!-- Realtime Activity Log -->
-      <section class="panel" aria-labelledby="notifications-heading">
-        <div class="panel-head">
-          <h3 id="notifications-heading" class="panel-title">آخرین رویدادهای تولید</h3>
-        </div>
-
-        <div class="timeline" role="list">
-          <article class="timeline-item" role="listitem">
-            <div class="timeline-icon"><i data-feather="check-circle"></i></div>
-            <div>
-              <div class="timeline-time font-mono">۱۰ دقیقه پیش</div>
-              <div class="timeline-desc">تایید برگه بازرسی QC پارچه جین ۱۲ اونس کجراه</div>
-            </div>
-          </article>
-          <article class="timeline-item" role="listitem">
-            <div class="timeline-icon"><i data-feather="scissors"></i></div>
-            <div>
-              <div class="timeline-time font-mono">۴۵ دقیقه پیش</div>
-              <div class="timeline-desc">شروع بافت پارت ۲ سفارش #ORD-1002 بر روی دستگاه Loom-01</div>
-            </div>
-          </article>
-          <article class="timeline-item" role="listitem">
-            <div class="timeline-icon"><i data-feather="truck"></i></div>
-            <div>
-              <div class="timeline-time font-mono">۲ ساعت پیش</div>
-              <div class="timeline-desc">ورود محموله نخ پنبه شانه شده به انبار مواد اولیه</div>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <!-- Reminders / Tasks -->
+      <!-- Dynamic System Generated Actions & Reminders -->
       <section class="panel" aria-labelledby="reminders-heading">
         <div class="panel-head">
-          <h3 id="reminders-heading" class="panel-title">وظایف و یادآورهای امروز</h3>
+          <h3 id="reminders-heading" class="panel-title">اقدامات و هشدارهای خودکار سیستم</h3>
         </div>
 
         <div class="tasks" role="list">
-          <div class="task-item" role="listitem">
-            <label class="task-label">
-              <input type="checkbox" class="task-checkbox" checked>
-              <div>
-                <div class="task-title">بررسی دوره سرویس دستگاه رنگرزی Vat-02</div>
-                <div class="task-meta">بخش فنی و نگهداری</div>
-              </div>
-            </label>
-          </div>
-          <div class="task-item" role="listitem">
-            <label class="task-label">
-              <input type="checkbox" class="task-checkbox">
-              <div>
-                <div class="task-title">تایید فرمول ساخت BOM جدید برای پارچه کتان</div>
-                <div class="task-meta">واحد مهندسی محصول</div>
-              </div>
-            </label>
-          </div>
+          {% if system_tasks %}
+            {% for task in system_tasks %}
+              <a href="{{ task.url }}" class="task-item text-decoration-none" role="listitem">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="btn-icon me-1"><i data-feather="{{ task.icon }}" style="width:15px;height:15px;"></i></div>
+                  <div>
+                    <div class="task-title text-dark">{{ task.title }}</div>
+                    <div class="task-meta text-muted">{{ task.meta }}</div>
+                  </div>
+                </div>
+                <span class="{{ task.badge_class }} text-xs ms-2">{{ task.badge }}</span>
+              </a>
+            {% endfor %}
+          {% else %}
+            <div class="p-3 text-center text-muted text-xs">
+              <i data-feather="check-circle" class="me-1 text-success"></i>
+              هیچ اقدام معوقه‌ای در دیتابیس وجود ندارد.
+            </div>
+          {% endif %}
         </div>
       </section>
 
-      <!-- Quick Factory Summary -->
+      <!-- Realtime Activity Log (Multi-model merge) -->
+      <section class="panel" aria-labelledby="notifications-heading">
+        <div class="panel-head">
+          <h3 id="notifications-heading" class="panel-title">آخرین رویدادهای تولید و انبار</h3>
+        </div>
+
+        <div class="timeline" role="list">
+          {% if activity_timeline %}
+            {% for act in activity_timeline %}
+              <article class="timeline-item" role="listitem">
+                <div class="timeline-icon" style="background: {{ act.icon_bg }}; color: {{ act.icon_color }};">
+                  <i data-feather="{{ act.icon }}"></i>
+                </div>
+                <div>
+                  <div class="timeline-time font-mono">{{ act.time_str }}</div>
+                  <div class="timeline-desc">{{ act.desc }}</div>
+                </div>
+              </article>
+            {% endfor %}
+          {% else %}
+            <article class="timeline-item" role="listitem">
+              <div class="timeline-icon" style="background: rgba(79, 70, 229, 0.1); color: #4f46e5;">
+                <i data-feather="info"></i>
+              </div>
+              <div>
+                <div class="timeline-time font-mono">سیستم</div>
+                <div class="timeline-desc">هنوز رویداد جدیدی در دیتابیس ثبت نشده است.</div>
+              </div>
+            </article>
+          {% endif %}
+        </div>
+      </section>
+
+      <!-- Quick Factory Summary (Calculated from DB) -->
       <section class="panel" aria-labelledby="summary-heading">
         <div class="panel-head">
-          <h3 id="summary-heading" class="panel-title">خلاصه وضعیت کارخانه</h3>
+          <h3 id="summary-heading" class="panel-title">خلاصه کارکرد کارخانه</h3>
         </div>
         <div class="summary-grid">
           <div class="summary-item">
             <div class="summary-label">دستگاه‌های فعال</div>
-            <div class="summary-value text-success font-mono">۸ / ۱۰</div>
+            <div class="summary-value text-success font-mono">{{ factory_summary.active_machines_str }}</div>
           </div>
           <div class="summary-item">
-            <div class="summary-label">توقفات فنی</div>
-            <div class="summary-value text-danger font-mono">۰</div>
+            <div class="summary-label">توقفات نت معوق</div>
+            <div class="summary-value {% if factory_summary.stoppages_count > 0 %}text-danger{% else %}text-success{% endif %} font-mono">{{ factory_summary.stoppages_count }}</div>
           </div>
           <div class="summary-item">
-            <div class="summary-label">راندمان شیفت</div>
-            <div class="summary-value text-primary font-mono">۹۸٪</div>
+            <div class="summary-label">راندمان کیفی</div>
+            <div class="summary-value text-primary font-mono">{{ factory_summary.efficiency_rate }}</div>
           </div>
         </div>
       </section>
@@ -848,7 +798,7 @@
     <!-- Inventory Alert Panel -->
     <section class="panel inventory-panel" aria-labelledby="inventory-heading">
       <div class="panel-head">
-        <h3 id="inventory-heading" class="panel-title">هشدار موجودی مواد اولیه و کالا</h3>
+        <h3 id="inventory-heading" class="panel-title">پایش موجودی انبار مواد اولیه و محصولات</h3>
         <div class="panel-actions">
           <a href="{% url 'warehouse:warehouse_list' %}">مدیریت انبار</a>
         </div>
@@ -859,50 +809,27 @@
           {% for item in inventory %}
             <div class="inventory-item" role="listitem">
               <div>
-                <div class="inventory-name">{{ item.name|default:"نام کالا" }}</div>
-                <div class="inventory-sku font-mono">{{ item.sku|default:"—" }} • حد آستانه: {{ item.threshold|default:"—" }}</div>
+                <div class="inventory-name">{{ item.name }}</div>
+                <div class="inventory-sku font-mono">{{ item.sku }} • انبار: {{ item.warehouse }} (حد آستانه: {{ item.threshold }} {{ item.unit }})</div>
               </div>
               <div class="inventory-stats">
-                <div class="inventory-qty">موجودی: <strong class="font-mono text-dark">{{ item.qty|default:"0" }}</strong></div>
+                <div class="inventory-qty">موجودی: <strong class="font-mono text-dark persianize">{{ item.qty }} {{ item.unit }}</strong></div>
                 <div role="progressbar" class="inventory-fill">
-                  <div class="bar ed-inventory__fill-bar" data-qty="{{ item.qty|default:0 }}" data-threshold="{{ item.threshold|default:1 }}"></div>
+                  <div class="bar" style="width: {{ item.pct }}%;"></div>
                 </div>
               </div>
             </div>
           {% endfor %}
         {% else %}
-          <div class="inventory-item">
-            <div>
-              <div class="inventory-name">نخ پنبه شانه شده نمره ۳۰</div>
-              <div class="inventory-sku font-mono">Y-COT-30 • حد آستانه: ۵۰۰ کیلو</div>
-            </div>
-            <div class="inventory-stats">
-              <div class="inventory-qty">موجودی: <strong class="font-mono text-dark">۲,۴۵۰ کیلو</strong></div>
-              <div role="progressbar" class="inventory-fill">
-                <div class="bar" style="width: 85%;"></div>
-              </div>
-            </div>
-          </div>
-          <div class="inventory-item">
-            <div>
-              <div class="inventory-name">رنگ نیل پودری (Indigo)</div>
-              <div class="inventory-sku font-mono">D-IND-BL • حد آستانه: ۱۰۰ کیلو</div>
-            </div>
-            <div class="inventory-stats">
-              <div class="inventory-qty">موجودی: <strong class="font-mono text-dark">۴۲۰ کیلو</strong></div>
-              <div role="progressbar" class="inventory-fill">
-                <div class="bar" style="width: 65%;"></div>
-              </div>
-            </div>
-          </div>
+          <div class="p-3 text-center text-muted text-xs">هیچ کالایی در انبار ثبت نشده است.</div>
         {% endif %}
       </div>
     </section>
 
-    <!-- Sales Chart Panel -->
+    <!-- Dynamic Sales & Production Chart Panel -->
     <section class="panel sales-panel" aria-labelledby="sales-heading">
       <div class="panel-head flex-wrap gap-2">
-        <h3 id="sales-heading" class="panel-title">تحلیل و آنالیز خطوط تولید</h3>
+        <h3 id="sales-heading" class="panel-title">تحلیل و آنالیز خطوط تولید و فروش</h3>
         <div class="btn-group btn-group-sm" role="group" aria-label="انتخاب نمودار">
           <button type="button" class="btn btn-primary active chart-tab-btn text-xs py-1 px-2" data-type="sales">فروش ریالی</button>
           <button type="button" class="btn btn-outline-primary chart-tab-btn text-xs py-1 px-2" data-type="meters">متراژ بافت (متر)</button>
@@ -915,8 +842,8 @@
       </div>
 
       <div class="panel-footer d-flex justify-content-between align-items-center pt-2 border-top text-xs text-muted">
-        <div>شاخص فعال: <strong id="chartActiveLabel" class="text-dark font-mono ms-1">گردش فروش ۶ ماهه</strong></div>
-        <div>نرخ رشد تولید: <strong id="chartGrowthLabel" class="text-success font-mono">+۱۴.۲٪</strong></div>
+        <div>شاخص فعال: <strong id="chartActiveLabel" class="text-dark font-mono ms-1">—</strong></div>
+        <div>نرخ رشد: <strong id="chartGrowthLabel" class="text-success font-mono">+۱۴.۲٪</strong></div>
       </div>
     </section>
 
@@ -933,7 +860,6 @@
 
   const PERSIAN_DIGITS = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
 
-  /* Persian digits with intelligent comma handling (never format dates like 1405/05/03) */
   function toPersianDigits(s, addCommas = true){
     let str = String(s);
     if (addCommas) {
@@ -941,7 +867,7 @@
         const before = fullStr[offset - 1];
         const after = fullStr[offset + m.length];
         if (before === '/' || before === '-' || before === ':' || after === '/' || after === '-' || after === ':') {
-          return m; // keep year intact without commas!
+          return m;
         }
         return Number(m).toLocaleString('en-US');
       });
@@ -995,7 +921,7 @@
     const timeStr = `${hh}:${mm}:${ss}`;
     const dateEl = document.getElementById('jalali-date');
     const timeEl = document.getElementById('jalali-time');
-    if(dateEl) dateEl.textContent = toPersianDigits(dateStr, false); // NO COMMAS FOR DATES!
+    if(dateEl) dateEl.textContent = toPersianDigits(dateStr, false);
     if(timeEl) timeEl.textContent = toPersianDigits(timeStr, false);
   }
 
@@ -1006,44 +932,8 @@
     }
   }
 
-  function initInventoryBars(){
-    document.querySelectorAll('.ed-inventory__fill-bar').forEach(bar => {
-      const qty = parseFloat(bar.getAttribute('data-qty')) || 0;
-      const threshold = parseFloat(bar.getAttribute('data-threshold')) || 1;
-      let pct = Math.round((qty / Math.max(threshold * 2, 1)) * 100);
-      pct = Math.max(10, Math.min(100, pct));
-      bar.style.width = pct + '%';
-    });
-  }
-
   let chartInstance = null;
-
-  const chartDatasets = {
-    sales: {
-      label: 'میزان فروش (میلیون ریال)',
-      data: [420, 580, 720, 690, 850, 940],
-      color: '#4f46e5',
-      bg: 'rgba(79, 70, 229, 0.08)',
-      activeText: 'گردش فروش ۶ ماهه (۱,۴۸۰,۰۰۰,۰۰۰ ریال)',
-      growth: '+۱۴.۲٪'
-    },
-    meters: {
-      label: 'متراژ تولید (متر)',
-      data: [12500, 15800, 18200, 17400, 21000, 24500],
-      color: '#10b981',
-      bg: 'rgba(16, 185, 129, 0.08)',
-      activeText: 'کل متراژ تولید شده (۱۰۹,۴۰۰ متر)',
-      growth: '+۱۸.۵٪'
-    },
-    oee: {
-      label: 'راندمان کارهای تولیدی (%)',
-      data: [88, 91, 94, 92, 95, 96.4],
-      color: '#0284c7',
-      bg: 'rgba(2, 132, 199, 0.08)',
-      activeText: 'میانگین کیفیت و بهره‌وری OEE (۹۶.۴٪)',
-      growth: '+۴.۱٪'
-    }
-  };
+  const chartDatasets = JSON.parse('{{ chart_datasets_json|safe }}' || '{}');
 
   function loadChart(){
     const canvas = document.getElementById('salesChart');
@@ -1055,7 +945,7 @@
       try {
         const ctx = canvas.getContext('2d');
         const labels = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور'];
-        const cur = chartDatasets.sales;
+        const cur = chartDatasets.sales || { label: 'فروش', data: [0,0,0,0,0,0], color: '#4f46e5', bg: 'rgba(79,70,229,0.1)', activeText: '—', growth: '+۰٪' };
         
         chartInstance = new Chart(ctx, {
           type: 'line',
@@ -1084,6 +974,11 @@
           }
         });
 
+        const activeLabelEl = document.getElementById('chartActiveLabel');
+        const growthLabelEl = document.getElementById('chartGrowthLabel');
+        if(activeLabelEl) activeLabelEl.textContent = cur.activeText;
+        if(growthLabelEl) growthLabelEl.textContent = cur.growth;
+
         // Setup chart tab switcher
         document.querySelectorAll('.chart-tab-btn').forEach(btn => {
           btn.addEventListener('click', function(){
@@ -1104,10 +999,8 @@
               chartInstance.data.datasets[0].pointBackgroundColor = ds.color;
               chartInstance.update();
 
-              const labelEl = document.getElementById('chartActiveLabel');
-              const growthEl = document.getElementById('chartGrowthLabel');
-              if(labelEl) labelEl.textContent = ds.activeText;
-              if(growthEl) growthEl.textContent = ds.growth;
+              if(activeLabelEl) activeLabelEl.textContent = ds.activeText;
+              if(growthLabelEl) growthLabelEl.textContent = ds.growth;
             }
           });
         });
@@ -1137,7 +1030,6 @@
     setInterval(updateJalaliClock, 1000);
     persianizeAll();
     initFeather();
-    initInventoryBars();
     loadChart();
     initTableSearch();
   });
@@ -1145,3 +1037,4 @@
 })();
 </script>
 {% endblock %}
+
