@@ -147,24 +147,6 @@ textile-erp/
 
 ---
 
-## 📤 GitHub Commit Instructions / دستورات ارسال به گیت‌هاب
-
-To push the latest secure changes to your GitHub repository:
-
-```bash
-# 1. Check status
-git status
-
-# 2. Add modified & new files
-git add .
-
-# 3. Commit changes with a clean message
-git commit -m "feat: setup PostgreSQL configuration with fallback, clean env variables, update dashboard & README"
-
-# 4. Push to main branch
-git push origin main
-```
-
 ---
 
 ## 📜 License / مجوز
